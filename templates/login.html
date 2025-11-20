@@ -1,0 +1,86 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Login - 4 Pelos Club Barbers</title>
+        <link rel="shortcut icon"
+              href="{% static 'assets/img/favicon.ico' %}"
+              type="image/x-icon">
+        <link rel="stylesheet" href="{% static 'assets/css/app.css' %}">
+        <link rel="stylesheet" href="{% static 'assets/css/app-dark.css' %}">
+        <link rel="stylesheet" href="{% static 'assets/css/auth.css' %}">
+        <link rel="stylesheet"
+              href="{% static 'assets/custom_css/app-login.css' %}">
+        <!-- Google Fonts -->
+        <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap"
+              rel="stylesheet">
+        <!-- Bootstrap Icons -->
+        <link rel="stylesheet"
+              href="{% static 'assets/extensions/@fortawesome/fontawesome-free/css/all.min.css' %}">
+        <style>
+        body{
+            background-image: url("{% static 'assets/img/login-image.png' %}");
+        }
+        </style>
+    </head>
+    <body>
+        <div class="login-container">
+            <div class="login-card">
+                <div class="text-center mb-4">
+                    <h1 class="brand-title">4 Pelos Club</h1>
+                    <p class="auth-subtitle">Bienvenido de nuevo</p>
+                </div>
+                {% if error %}
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="fas fa-exclamation-circle me-2"></i> {{ error }}
+                    </div>
+                {% endif %}
+                <form action="" method="POST" id="loginForm">
+                    {% csrf_token %}
+                    <div class="form-group position-relative">
+                        <input type="text"
+                               name="username"
+                               class="form-control form-control-xl mb-2"
+                               placeholder="Usuario"
+                               required
+                               value="{{ request.POST.username|default:'' }}">
+                    </div>
+                    <div class="form-group position-relative">
+                        <input type="password"
+                               name="password"
+                               class="form-control form-control-xl"
+                               placeholder="Contraseña"
+                               required>
+                    </div>
+                    <div class="form-check form-check-lg d-flex align-items-center mb-4">
+                        <input class="form-check-input me-2"
+                               type="checkbox"
+                               value=""
+                               id="flexCheckDefault">
+                        <label class="form-check-label" for="flexCheckDefault">Mantener sesión iniciada</label>
+                    </div>
+                    <button class="btn btn-login" id="loginBtn">
+                        <i class="fas fa-sign-in-alt me-2"></i>
+                        Ingresar
+                    </button>
+                </form>
+            </div>
+        </div>
+        <script src="{% static 'assets/compiled/js/app.js' %}"></script>
+        <script src="{% static 'assets/js/components/dark.js' %}"></script>
+        <script src="{% static 'assets/extensions/perfect-scrollbar/perfect-scrollbar.min.js' %}"></script>
+        {% comment %} ANIMATION {% endcomment %}
+        <script>
+            document.getElementById('loginForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+
+                const btn = document.getElementById('loginBtn');
+                btn.classList.add('loading');
+                await new Promise(resolve => setTimeout(resolve, 700)); 
+                this.submit();
+            });
+        </script>
+    </body>
+</html>
