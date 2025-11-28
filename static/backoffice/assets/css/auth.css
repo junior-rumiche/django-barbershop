@@ -1,0 +1,342 @@
+body {
+    background-color: #fff;
+}
+
+#auth {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ed 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Decorative background elements */
+#auth::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 70%;
+    height: 140%;
+    background: linear-gradient(135deg, rgba(67, 94, 190, 0.08) 0%, rgba(67, 94, 190, 0.03) 100%);
+    border-radius: 50%;
+    z-index: 0;
+}
+
+#auth::after {
+    content: '';
+    position: absolute;
+    bottom: -30%;
+    left: -10%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(67, 94, 190, 0.05) 0%, rgba(67, 94, 190, 0.02) 100%);
+    border-radius: 50%;
+    z-index: 0;
+}
+
+.login-wrapper {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 600px;
+    padding: 1.5rem;
+}
+
+.login-card {
+    background: #fff;
+    border-radius: 1.5rem;
+    padding: 2.5rem;
+    box-shadow: 0 20px 60px rgba(67, 94, 190, 0.15), 0 8px 25px rgba(0, 0, 0, 0.08);
+    border: none;
+}
+
+/* Logo section inside card */
+.logo-section {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.logo-container {
+    display: inline-block;
+    padding: 1rem;
+    background: linear-gradient(135deg, #f8f9ff 0%, #eef1f8 100%);
+    border-radius: 1.25rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 4px 15px rgba(67, 94, 190, 0.1);
+}
+
+.logo-container img {
+    height: 150px;
+    width: auto;
+    display: block;
+}
+
+.brand-name {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--bs-primary);
+    letter-spacing: 0.5px;
+    margin-bottom: 0.25rem;
+}
+
+.brand-tagline {
+    color: #6c757d;
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+/* Welcome text */
+.welcome-section {
+    text-align: center;
+    margin-bottom: 1.75rem;
+}
+
+.welcome-title {
+    color: #25396f;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.35rem;
+}
+
+.welcome-subtitle {
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+/* Form styles */
+.form-group {
+    margin-bottom: 1.25rem;
+}
+
+.form-label {
+    color: #25396f;
+    font-weight: 600;
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.form-label i {
+    color: var(--bs-primary);
+    font-size: 0.9rem;
+}
+
+.form-control {
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+    border-radius: 0.625rem;
+    border: 1.5px solid #e2e8f0;
+    background-color: #f8fafc;
+    transition: all 0.2s ease;
+}
+
+.form-control:focus {
+    border-color: var(--bs-primary);
+    background-color: #fff;
+    box-shadow: 0 0 0 3px rgba(67, 94, 190, 0.12);
+}
+
+.form-control::placeholder {
+    color: #a0aec0;
+}
+
+.input-group-custom {
+    position: relative;
+}
+
+.input-group-custom .form-control {
+    padding-right: 2.75rem;
+}
+
+.input-icon {
+    position: absolute;
+    right: 0.875rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #a0aec0;
+    font-size: 1rem;
+    pointer-events: none;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 0.875rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #a0aec0;
+    cursor: pointer;
+    font-size: 1rem;
+    z-index: 10;
+    padding: 0;
+    transition: color 0.2s;
+}
+
+.password-toggle:hover {
+    color: var(--bs-primary);
+}
+
+/* Checkbox */
+.form-check {
+    margin-bottom: 1.5rem;
+}
+
+.form-check-input {
+    border-radius: 0.25rem;
+}
+
+.form-check-label {
+    font-size: 0.85rem;
+    color: #64748b;
+}
+
+/* Button */
+.btn-login {
+    padding: 0.8rem 1.5rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border-radius: 0.625rem;
+    text-transform: uppercase;
+    letter-spacing: 0.75px;
+    background: var(--bs-primary);
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.btn-login:hover {
+    background: #3a52a8;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(67, 94, 190, 0.35);
+}
+
+.btn-login:active {
+    transform: translateY(0);
+}
+
+.btn-login .spinner-border {
+    width: 1rem;
+    height: 1rem;
+    margin-right: 0.5rem;
+}
+
+/* Divider */
+.divider {
+    display: flex;
+    align-items: center;
+    margin: 1.5rem 0 1rem;
+    color: #94a3b8;
+    font-size: 0.75rem;
+}
+
+.divider::before,
+.divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #e2e8f0, transparent);
+}
+
+.divider span {
+    padding: 0 0.75rem;
+}
+
+/* Footer */
+.footer-text {
+    color: #94a3b8;
+    font-size: 0.75rem;
+    text-align: center;
+    margin: 0;
+}
+
+.footer-text i {
+    color: var(--bs-primary);
+}
+
+/* Alert styles */
+.alert-container {
+    margin-bottom: 1.25rem;
+}
+
+.custom-alert {
+    background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+    border: 1px solid #fecaca;
+    border-radius: 0.625rem;
+    padding: 0.875rem 1rem;
+    color: #991b1b;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.625rem;
+}
+
+.custom-alert i {
+    font-size: 1.1rem;
+    margin-top: 0.1rem;
+    color: #dc2626;
+}
+
+.custom-alert strong {
+    font-size: 0.85rem;
+}
+
+.custom-alert small {
+    font-size: 0.8rem;
+    color: #b91c1c;
+}
+
+/* Validation feedback */
+.invalid-feedback-custom {
+    color: #dc2626;
+    font-size: 0.75rem;
+    margin-top: 0.35rem;
+    display: none;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.invalid-feedback-custom.show {
+    display: flex;
+}
+
+.invalid-feedback-custom i {
+    font-size: 0.8rem;
+}
+
+.form-control.is-invalid {
+    border-color: #f87171;
+    background-color: #fef2f2;
+}
+
+.form-control.is-invalid:focus {
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
+}
+
+/* Responsive */
+@media (max-width: 575.98px) {
+    .login-wrapper {
+        padding: 1rem;
+    }
+
+    .login-card {
+        padding: 1.75rem;
+        border-radius: 1.25rem;
+    }
+
+    .logo-container img {
+        height: 55px;
+    }
+
+    .brand-name {
+        font-size: 1.25rem;
+    }
+
+    .welcome-title {
+        font-size: 1.25rem;
+    }
+}

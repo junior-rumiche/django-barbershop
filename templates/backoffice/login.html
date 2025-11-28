@@ -1,0 +1,197 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="{% static 'favicon.ico' %}" type="image/x-icon">
+    <title>Iniciar Sesión | 4 Pelos Club Barbers</title>
+    <link rel="stylesheet" crossorigin href="{% static 'backoffice/assets/css/app.css' %}">
+    <link rel="stylesheet" crossorigin href="{% static 'backoffice/assets/css/app-dark.css' %}">
+    <link rel="stylesheet" crossorigin href="{% static 'backoffice/assets/css/auth.css' %}">
+    <link rel="stylesheet" href="{% static 'backoffice/extensions/sweetalert2/sweetalert2.min.css' %}">
+    <link rel="stylesheet" href="{% static 'backoffice/extensions/bootstrap-icons/font/bootstrap-icons.css' %}">
+
+</head>
+
+<body>
+    <script src="{% static 'backoffice/assets/js/initTheme.js' %}"></script>
+    <div id="auth">
+        <div class="login-wrapper">
+            <div class="login-card">
+                <!-- Logo Section -->
+                <div class="logo-section">
+                    <div class="logo-container rounded-circle">
+                        <a href="{% url 'backoffice:login' %}">
+                            <img src="{% static 'logo.png' %}" alt="4 Pelos Club Barbers">
+                        </a>
+                    </div>
+                </div>
+
+
+                <!-- Error Alert -->
+                {% if form.errors %}
+                <div class="alert-container">
+                    <div class="custom-alert">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                        <div>
+                            <strong>¡Error de autenticación!</strong><br>
+                            <small>Usuario o contraseña incorrectos.</small>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Login Form -->
+                <form method="post" action="{% url 'backoffice:login' %}" id="loginForm" novalidate>
+                    {% csrf_token %}
+
+                    <div class="form-group">
+                        <div class="input-group-custom">
+                            <input type="text" class="form-control {% if form.errors %}is-invalid{% endif %}"
+                                id="username" name="username" placeholder="Ingresa tu usuario"
+                                value="{{ form.username.value|default:'' }}" required autocomplete="username">
+                            <i class="bi bi-person input-icon"></i>
+                        </div>
+                        <div class="invalid-feedback-custom" id="username-error">
+                            <i class="bi bi-exclamation-circle"></i>
+                            <span>El usuario es requerido</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+
+                        <div class="input-group-custom">
+                            <input type="password" class="form-control {% if form.errors %}is-invalid{% endif %}"
+                                id="password" name="password" placeholder="Ingresa tu contraseña" required
+                                autocomplete="current-password">
+                            <button type="button" class="password-toggle" onclick="toggle_password()">
+                                <i class="bi bi-eye" id="toggleIcon"></i>
+                            </button>
+                        </div>
+                        <div class="invalid-feedback-custom" id="password-error">
+                            <i class="bi bi-exclamation-circle"></i>
+                            <span>La contraseña es requerida</span>
+                        </div>
+                    </div>
+
+                    <div class="form-check d-flex align-items-center">
+                        <input class="form-check-input me-2" type="checkbox" id="rememberMe" name="remember">
+                        <label class="form-check-label" for="rememberMe">
+                            Mantener sesión iniciada
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-login w-100" id="loginBtn">
+                        <span class="btn-text">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>
+                            Iniciar Sesión
+                        </span>
+                        <span class="btn-loading" style="display: none;">
+                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                            Verificando...
+                        </span>
+                    </button>
+                </form>
+
+                <div class="divider">
+                    <span>Panel de Administración</span>
+                </div>
+
+                <p class="footer-text">
+                    <i class="bi bi-lock-fill me-1"></i>
+                    Acceso exclusivo para personal autorizado
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'backoffice/extensions/sweetalert2/sweetalert2.all.min.js' %}"></script>
+    <script>
+        /**
+         * Toggles the visibility of the password input field.
+         * Switches between 'password' and 'text' types and updates the icon accordingly.
+         * @function toggle_password
+         * @returns {void}
+         */
+        function toggle_password() {
+            const password_input = document.getElementById('password');
+            const toggle_icon = document.getElementById('toggleIcon');
+
+            if (password_input.type === 'password') {
+                password_input.type = 'text';
+                toggle_icon.classList.remove('bi-eye');
+                toggle_icon.classList.add('bi-eye-slash');
+            } else {
+                password_input.type = 'password';
+                toggle_icon.classList.remove('bi-eye-slash');
+                toggle_icon.classList.add('bi-eye');
+            }
+        }
+
+        // Form validation
+        const login_form = document.getElementById('loginForm');
+        const username_input = document.getElementById('username');
+        const password_input = document.getElementById('password');
+        const username_error = document.getElementById('username-error');
+        const password_error = document.getElementById('password-error');
+        const login_btn = document.getElementById('loginBtn');
+
+
+
+        /**
+         * Validates a single form field.
+         * Checks if the input is empty and updates the UI with error classes.
+         * @function validate_field
+         * @param {HTMLInputElement} input - The input element to validate.
+         * @param {HTMLElement} error_element - The element to display the error message.
+         * @returns {boolean} - True if valid (not empty), false otherwise.
+         */
+        function validate_field(input, error_element) {
+            if (!input.value.trim()) {
+                input.classList.add('is-invalid');
+                error_element.classList.add('show');
+                return false;
+            } else {
+                input.classList.remove('is-invalid');
+                error_element.classList.remove('show');
+                return true;
+            }
+        }
+
+        username_input.addEventListener('blur', () => validate_field(username_input, username_error));
+        password_input.addEventListener('blur', () => validate_field(password_input, password_error));
+
+        username_input.addEventListener('input', () => {
+            if (username_input.value.trim()) {
+                username_input.classList.remove('is-invalid');
+                username_error.classList.remove('show');
+            }
+        });
+
+        password_input.addEventListener('input', () => {
+            if (password_input.value.trim()) {
+                password_input.classList.remove('is-invalid');
+                password_error.classList.remove('show');
+            }
+        });
+
+        login_form.addEventListener('submit', function (e) {
+            const is_username_valid = validate_field(username_input, username_error);
+            const is_password_valid = validate_field(password_input, password_error);
+
+            if (!is_username_valid || !is_password_valid) {
+                e.preventDefault();
+                return;
+            }
+
+            // Show loading state
+            login_btn.querySelector('.btn-text').style.display = 'none';
+            login_btn.querySelector('.btn-loading').style.display = 'inline-flex';
+            login_btn.disabled = true;
+        });
+    </script>
+</body>
+
+</html>
