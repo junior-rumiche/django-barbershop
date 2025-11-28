@@ -12,6 +12,11 @@ from core.apps.backoffice.views.users import (
     UserCreateView,
     UserUpdateView,
 )
+from core.apps.backoffice.views.groups import (
+    GroupListView,
+    GroupCreateView,
+    GroupUpdateView,
+)
 
 
 urlpatterns = [
@@ -29,4 +34,9 @@ urlpatterns = [
     path("users/", UserListView.as_view(), name="user_list"),
     path("users/add/", UserCreateView.as_view(), name="user_add"),
     path("users/<int:pk>/edit/", UserUpdateView.as_view(), name="user_edit"),
+
+    # Groups URLs
+    path("groups/", GroupListView.as_view(), name="group_list"),
+    path("groups/add/", GroupCreateView.as_view(), name="group_add"),
+    path("groups/<int:pk>/edit/", GroupUpdateView.as_view(), name="group_edit"),
 ]

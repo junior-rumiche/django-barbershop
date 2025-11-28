@@ -73,12 +73,14 @@
 
                 <li class="sidebar-title text-muted">Administración</li>
 
-                <li class="sidebar-item  ">
-                    <a href="ui-file-uploader.html" class='sidebar-link'>
+                {% if perms.auth.view_group %}
+                <li class="sidebar-item  {% if 'group_' in request.resolver_match.url_name %}active{% endif %}">
+                    <a href="{% url 'backoffice:group_list' %}" class='sidebar-link'>
                         <i class="bi bi-people"></i>
                         <span>Grupos</span>
                     </a>
                 </li>
+                {% endif %}
 
                 {% if perms.auth.view_user %}
                 <li class="sidebar-item  {% if 'user_' in request.resolver_match.url_name %}active{% endif %}">

@@ -1,6 +1,6 @@
 import django_filters
 from django import forms
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from core.apps.backoffice.models import Service
 
 class ServiceFilter(django_filters.FilterSet):
@@ -68,3 +68,14 @@ class UserFilter(django_filters.FilterSet):
     class Meta:
         model = User
         fields = ['username', 'email', 'is_active']
+
+class GroupFilter(django_filters.FilterSet):
+    name = django_filters.CharFilter(
+        lookup_expr='icontains',
+        label='Nombre',
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Buscar por nombre...'})
+    )
+
+    class Meta:
+        model = Group
+        fields = ['name']
