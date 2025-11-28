@@ -1,0 +1,51 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page_title }} - 4 Pelos Club Barbers</title>
+    <link rel="shortcut icon" href="{% static 'favicon.ico' %}" type="image/x-icon">
+    <link rel="stylesheet" crossorigin href="{% static 'backoffice/assets/css/app.css' %}">
+    <link rel="stylesheet" crossorigin href="{% static 'backoffice/assets/css/app-dark.css' %}">
+    {% block styles %}{% endblock %}
+</head>
+
+<body>
+    <script src="{% static 'backoffice/assets/js/initTheme.js' %}"></script>
+    <div id="app">
+        {% include 'base/backoffice/sidebar.html' %}
+
+        <div id="main" class='layout-navbar navbar-fixed'>
+            {% include 'base/backoffice/header.html' %}
+            <div id="main-content">
+
+                <div class="page-heading">
+                    <div class="page-title">
+                        <div class="row">
+                            <div class="col-12 col-md-6 order-md-1 order-last">
+                                <h3>{{ page_title }}</h3>
+                                <p class="text-subtitle text-muted">{{ page_description }}</p>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    {% block content %}{% endblock %}
+
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+    <script src="{% static 'backoffice/assets/js/components/dark.js' %}"></script>
+    <script src="{% static 'backoffice/assets/extensions/perfect-scrollbar/perfect-scrollbar.min.js' %}"></script>
+    <script src="{% static 'backoffice/assets/js/app.js' %}"></script>
+    {% block scripts %}{% endblock %}
+
+
+</body>
+
+</html>
