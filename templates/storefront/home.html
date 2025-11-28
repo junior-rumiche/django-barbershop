@@ -1,0 +1,285 @@
+{% extends 'base/storefront/base.html' %}
+{% load static %}
+{% block content %}
+<section id="inicio">
+    <div class="hero-bg">
+        <img src="{% static 'storefront/img/hero-bg.png' %}" alt="Fondo Barbería">
+    </div>
+    <div class="hero-overlay"></div>
+    <div class="container">
+        <div class="hero-content">
+            <div class="hero-subtitle reveal">
+                <span class="hero-line"></span>
+                <span class="uppercase">Estilo Clásico & Moderno</span>
+            </div>
+            <h1 class="reveal delay-100">
+                TU ESTILO,
+                <br />
+                <span class="hero-gradient-text">NUESTRA PASIÓN.</span>
+            </h1>
+            <p class="lead reveal delay-200">
+                Más que un corte, una experiencia. Descubre el arte de la barbería tradicional fusionada con las
+                tendencias más actuales.
+            </p>
+            <div class="flex gap-4 reveal delay-300" style="flex-wrap: wrap;">
+                <a href="#reservar" class="btn btn-primary btn-shine click-animate">RESERVAR CITA</a>
+                <a href="#servicios" class="btn btn-outline click-animate">
+                    VER SERVICIOS
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- --- SERVICES SECTION --- -->
+<section id="servicios" class="section">
+    <div class="container">
+        <div class="section-header reveal">
+            <h2>NUESTROS SERVICIOS</h2>
+            <div class="divider"></div>
+            <p class="lead" style="margin: 0 auto;">
+                Selecciona entre nuestra gama de servicios premium diseñados para el caballero moderno.
+            </p>
+        </div>
+        <div class="services-grid">
+            <!-- Card 1 -->
+            <div class="card reveal delay-100">
+                <div class="card-icon-box">
+                    <i class="fas fa-cut"></i>
+                </div>
+                <h3>CORTE CLÁSICO</h3>
+                <p style="color: var(--text-muted);
+                              margin-bottom: 1.5rem;
+                              font-size: 0.9rem">
+                    Corte personalizado con tijera y máquina, lavado, peinado y asesoramiento de imagen.
+                </p>
+                <div class="card-price">
+                    <span class="price-tag">$20.00</span>
+                    <button class="btn-text">RESERVAR</button>
+                </div>
+            </div>
+            <!-- Card 2 -->
+            <div class="card reveal delay-200">
+                <div class="card-icon-box">
+                    <i class="fas fa-user-tie"></i>
+                </div>
+                <h3>AFEITADO PREMIUM</h3>
+                <p style="color: var(--text-muted);
+                              margin-bottom: 1.5rem;
+                              font-size: 0.9rem">
+                    Ritual de afeitado con toalla caliente, aceites esenciales y masaje facial relajante.
+                </p>
+                <div class="card-price">
+                    <span class="price-tag">$15.00</span>
+                    <button class="btn-text">RESERVAR</button>
+                </div>
+            </div>
+            <!-- Card 3 -->
+            <div class="card reveal delay-300">
+                <div class="card-icon-box">
+                    <i class="fas fa-bolt"></i>
+                </div>
+                <h3>CORTE + BARBA</h3>
+                <p style="color: var(--text-muted);
+                              margin-bottom: 1.5rem;
+                              font-size: 0.9rem">
+                    El servicio completo. Corte de cabello detallado y perfilado de barba con ritual de toallas.
+                </p>
+                <div class="card-price">
+                    <span class="price-tag">$30.00</span>
+                    <button class="btn-text">RESERVAR</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- --- RESERVATION SECTION --- -->
+<section id="reservar" class="section" style="background: black;">
+    <!-- Decorative elements -->
+    <div style="position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 1px;
+                    background: linear-gradient(90deg, transparent, #333, transparent)"></div>
+    <div class="container">
+        <div class="split-section">
+            <!-- Text Content -->
+            <div style="flex: 1;" class="reveal">
+                <h2>
+                    RESERVA TU CITA
+                    <br />
+                    EN LÍNEA
+                </h2>
+                <p class="lead">
+                    No pierdas tiempo esperando. Selecciona tu barbero preferido, el día y la hora que mejor te
+                    convenga.
+                </p>
+                <div class="feature-box">
+                    <div class="icon-circle">
+                        <i class="far fa-clock"></i>
+                    </div>
+                    <div>
+                        <h4 style="font-weight: 700; margin-bottom: 2px;">Horarios Flexibles</h4>
+                        <p style="font-size: 0.85rem; color: var(--text-muted);">Lunes a Sábado de 10:00 AM a 9:00 PM
+                        </p>
+                    </div>
+                </div>
+                <div class="feature-box">
+                    <div class="icon-circle">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div>
+                        <h4 style="font-weight: 700; margin-bottom: 2px;">Confirmación Inmediata</h4>
+                        <p style="font-size: 0.85rem; color: var(--text-muted);">Recibe un recordatorio automático antes
+                            de tu cita.</p>
+                    </div>
+                </div>
+            </div>
+            <!-- Calendar Widget -->
+            <div style="flex: 1;
+                            display: flex;
+                            justify-content: center;
+                            width: 100%" class="reveal delay-200">
+                <div class="calendar-wrapper">
+                    <div class="calendar-header">
+                        <h3 style="display: flex;
+                                       align-items: center;
+                                       gap: 10px;
+                                       font-size: 1.25rem">
+                            <i class="far fa-calendar-alt" style="color: #a3a3a3;"></i>
+                            Noviembre 2023
+                        </h3>
+                        <div class="flex gap-2">
+                            <button class="day-btn" style="width: 30px; background: #262626;">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <button class="day-btn" style="width: 30px; background: #262626;">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Days Header -->
+                    <div class="calendar-grid" style="margin-bottom: 0.5rem;">
+                        <div class="day-label">Lun</div>
+                        <div class="day-label">Mar</div>
+                        <div class="day-label">Mié</div>
+                        <div class="day-label">Jue</div>
+                        <div class="day-label">Vie</div>
+                        <div class="day-label">Sáb</div>
+                        <div class="day-label">Dom</div>
+                    </div>
+                    <!-- Days Generated by JS -->
+                    <div id="calendar-grid" class="calendar-grid"></div>
+                    <!-- Time Slots -->
+                    <p style="font-size: 0.85rem;
+                                  color: var(--text-muted);
+                                  margin-bottom: 0.5rem">Horarios disponibles:</p>
+                    <div class="time-grid">
+                        <button class="time-btn click-animate">10:00 AM</button>
+                        <button class="time-btn click-animate active">11:30 AM</button>
+                        <button class="time-btn click-animate">03:00 PM</button>
+                        <button class="time-btn click-animate">04:30 PM</button>
+                        <button class="time-btn click-animate">06:00 PM</button>
+                        <button class="time-btn click-animate">08:00 PM</button>
+                    </div>
+                    <button class="btn btn-primary btn-shine click-animate" style="width: 100%;
+                                       margin-top: 2rem">CONFIRMAR CITA</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- --- TEAM SECTION --- -->
+<section id="equipo" class="section">
+    <div class="container">
+        <div class="flex justify-between items-center reveal" style="margin-bottom: 3rem;
+                        flex-wrap: wrap;
+                        gap: 1rem">
+            <div>
+                <h2>NUESTRO EQUIPO</h2>
+                <p style="color: var(--text-muted);">Profesionales dedicados a perfeccionar tu imagen.</p>
+            </div>
+            <button class="btn-text" style="font-size: 0.9rem;">VER TODO EL EQUIPO</button>
+        </div>
+        <div class="team-grid">
+            <!-- Barber 1 -->
+            <div class="team-card reveal delay-100">
+                <img src="https://images.unsplash.com/photo-1503951914875-befbb763ca35?q=80&w=1888&auto=format&fit=crop"
+                    alt="Barber" class="team-img">
+                <div class="team-overlay">
+                    <h3 style="font-size: 1.25rem; font-weight: bold;">Alex P.</h3>
+                    <p style="color: #d4d4d4; font-size: 0.9rem;">Master Barber</p>
+                    <div class="social-icons">
+                        <i class="fab fa-instagram" style="cursor: pointer;
+                                      transition: color 0.3s;
+                                      color: #ccc" onmouseover="this.style.color='white'"
+                            onmouseout="this.style.color='#ccc'"></i>
+                        <i class="fab fa-twitter" style="cursor: pointer;
+                                      transition: color 0.3s;
+                                      color: #ccc" onmouseover="this.style.color='white'"
+                            onmouseout="this.style.color='#ccc'"></i>
+                    </div>
+                </div>
+            </div>
+            <!-- Barber 2 -->
+            <div class="team-card reveal delay-200">
+                <img src="https://images.unsplash.com/photo-1618077360395-f3068be8e001?q=80&w=2080&auto=format&fit=crop"
+                    alt="Barber" class="team-img">
+                <div class="team-overlay">
+                    <h3 style="font-size: 1.25rem; font-weight: bold;">David M.</h3>
+                    <p style="color: #d4d4d4; font-size: 0.9rem;">Estilista Senior</p>
+                    <div class="social-icons">
+                        <i class="fab fa-instagram" style="cursor: pointer;
+                                      transition: color 0.3s;
+                                      color: #ccc" onmouseover="this.style.color='white'"
+                            onmouseout="this.style.color='#ccc'"></i>
+                        <i class="fab fa-twitter" style="cursor: pointer;
+                                      transition: color 0.3s;
+                                      color: #ccc" onmouseover="this.style.color='white'"
+                            onmouseout="this.style.color='#ccc'"></i>
+                    </div>
+                </div>
+            </div>
+            <!-- Barber 3 -->
+            <div class="team-card reveal delay-300">
+                <img src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?q=80&w=1887&auto=format&fit=crop"
+                    alt="Barber" class="team-img">
+                <div class="team-overlay">
+                    <h3 style="font-size: 1.25rem; font-weight: bold;">Carlos R.</h3>
+                    <p style="color: #d4d4d4; font-size: 0.9rem;">Barba Especialista</p>
+                    <div class="social-icons">
+                        <i class="fab fa-instagram" style="cursor: pointer;
+                                      transition: color 0.3s;
+                                      color: #ccc" onmouseover="this.style.color='white'"
+                            onmouseout="this.style.color='#ccc'"></i>
+                        <i class="fab fa-twitter" style="cursor: pointer;
+                                      transition: color 0.3s;
+                                      color: #ccc" onmouseover="this.style.color='white'"
+                            onmouseout="this.style.color='#ccc'"></i>
+                    </div>
+                </div>
+            </div>
+            <!-- Barber 4 -->
+            <div class="team-card reveal delay-400">
+                <img src="https://images.unsplash.com/photo-1605497788044-5a32c7078486?q=80&w=1887&auto=format&fit=crop"
+                    alt="Barber" class="team-img">
+                <div class="team-overlay">
+                    <h3 style="font-size: 1.25rem; font-weight: bold;">Javier S.</h3>
+                    <p style="color: #d4d4d4; font-size: 0.9rem;">Barbero Clásico</p>
+                    <div class="social-icons">
+                        <i class="fab fa-instagram" style="cursor: pointer;
+                                      transition: color 0.3s;
+                                      color: #ccc" onmouseover="this.style.color='white'"
+                            onmouseout="this.style.color='#ccc'"></i>
+                        <i class="fab fa-twitter" style="cursor: pointer;
+                                      transition: color 0.3s;
+                                      color: #ccc" onmouseover="this.style.color='white'"
+                            onmouseout="this.style.color='#ccc'"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

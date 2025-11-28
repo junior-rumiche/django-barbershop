@@ -1,0 +1,27 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>4 Pelos Club Barbers | Olmos, Lambayeque, Perú | Barbería, Estilo Premium</title>
+      <meta name="description"
+            content="4 Pelos Club Barbers en Olmos, Lambayeque, Perú. Expertos en barbería, cortes de cabello, ondulación y estilo para hombres.">
+      <meta name="keywords"
+            content="barbería, Olmos, Lambayeque, Perú, 4 Pelos Club, cortes de cabello, ondulación, estilo, peluquería masculina">
+      <link rel="shortcut icon" href="{% static 'storefront/img/favicon.ico' %}" type="image/x-icon">
+      <link rel="stylesheet" href="{% static 'storefront/css/home.css' %}">
+      <link rel="stylesheet" href="{% static 'backoffice/extensions/@fortawesome/fontawesome-free/css/all.min.css' %}">
+      {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+      {% include 'base/storefront/navbar.html' %}
+      {% block content %}{% endblock %}
+      {% include 'base/storefront/footer.html' %}
+      <script src="{% static 'storefront/js/home.js' %}"></script>
+      {% block extra_js %}{% endblock %}
+</body>
+
+</html>

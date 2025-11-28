@@ -17,8 +17,8 @@
             <ul class="menu">
                 <li class="sidebar-title text-muted">Tablero</li>
 
-                <li class="sidebar-item  ">
-                    <a href="ui-file-uploader.html" class='sidebar-link'>
+                <li class="sidebar-item {% if 'dashboard' in request.resolver_match.url_name %}active{% endif %}">
+                    <a href="{% url 'backoffice:dashboard' %}" class='sidebar-link'>
                         <i class="bi bi-graph-up"></i>
                         <span>Analiticas</span>
                     </a>
@@ -35,8 +35,8 @@
                 <li class="sidebar-title text-muted">Catalogo</li>
 
                 {% if perms.backoffice.view_service %}
-                <li class="sidebar-item  ">
-                    <a href="ui-file-uploader.html" class='sidebar-link'>
+                <li class="sidebar-item {% if 'service_' in request.resolver_match.url_name %}active{% endif %}">
+                    <a href="{% url 'backoffice:service_list' %}" class='sidebar-link'>
                         <i class="bi bi-scissors"></i>
                         <span>Servicios</span>
                     </a>
