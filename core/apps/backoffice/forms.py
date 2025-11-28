@@ -76,7 +76,7 @@ class UserForm(forms.ModelForm):
             "is_active": forms.CheckboxInput(attrs={"class": "form-check-input"}),
             "is_staff": forms.CheckboxInput(attrs={"class": "form-check-input"}),
             "is_superuser": forms.CheckboxInput(attrs={"class": "form-check-input"}),
-            "groups": forms.SelectMultiple(attrs={"class": "form-control choices"}),
+            "groups": forms.CheckboxSelectMultiple(),
         }
         labels = {
             "username": "Usuario",
