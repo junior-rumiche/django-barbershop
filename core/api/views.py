@@ -1,6 +1,7 @@
 from rest_framework import viewsets, permissions
+from django.contrib.auth.models import User
 from core.apps.backoffice.models import Service
-from core.api.serializers import ServiceSerializer
+from core.api.serializers import ServiceSerializer, UserSerializer
 
 class ServiceViewSet(viewsets.ModelViewSet):
     """
@@ -8,4 +9,13 @@ class ServiceViewSet(viewsets.ModelViewSet):
     """
     queryset = Service.objects.all().order_by('-id')
     serializer_class = ServiceSerializer
+    permission_classes = [permissions.DjangoModelPermissions]
+
+
+class UserViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows users to be viewed or edited.
+    """
+    queryset = User.objects.all().order_by('-id')
+    serializer_class = UserSerializer
     permission_classes = [permissions.DjangoModelPermissions]

@@ -7,6 +7,11 @@ from core.apps.backoffice.views.services import (
     ServiceUpdateView,
     ServiceDeleteView,
 )
+from core.apps.backoffice.views.users import (
+    UserListView,
+    UserCreateView,
+    UserUpdateView,
+)
 
 
 urlpatterns = [
@@ -19,4 +24,9 @@ urlpatterns = [
     path("services/add/", ServiceCreateView.as_view(), name="service_add"),
     path("services/<int:pk>/edit/", ServiceUpdateView.as_view(), name="service_edit"),
     path("services/<int:pk>/delete/", ServiceDeleteView.as_view(), name="service_delete"),
+    
+    # Users URLs
+    path("users/", UserListView.as_view(), name="user_list"),
+    path("users/add/", UserCreateView.as_view(), name="user_add"),
+    path("users/<int:pk>/edit/", UserUpdateView.as_view(), name="user_edit"),
 ]

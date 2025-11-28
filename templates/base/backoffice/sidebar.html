@@ -80,12 +80,14 @@
                     </a>
                 </li>
 
-                <li class="sidebar-item  ">
-                    <a href="ui-file-uploader.html" class='sidebar-link'>
+                {% if perms.auth.view_user %}
+                <li class="sidebar-item  {% if 'user_' in request.resolver_match.url_name %}active{% endif %}">
+                    <a href="{% url 'backoffice:user_list' %}" class='sidebar-link'>
                         <i class="bi bi-person-circle"></i>
                         <span>Usuarios</span>
                     </a>
                 </li>
+                {% endif %}
 
             </ul>
         </div>

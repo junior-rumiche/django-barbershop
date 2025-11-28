@@ -1,0 +1,264 @@
+{% extends 'base/backoffice/base.html' %}
+{% load static %}
+
+{% block styles %}
+<link rel="stylesheet" href="{% static 'backoffice/extensions/sweetalert2/sweetalert2.min.css' %}">
+{% endblock %}
+
+{% block title %}Usuarios{% endblock %}
+
+{% block content %}
+<div class="page-heading">
+   <div class="page-title">
+      <div class="row">
+         <div class="col-12 col-md-6 order-md-1 order-last">
+            <h3>{{ page_title }}</h3>
+            <p class="text-subtitle text-muted">Administra los usuarios del sistema.</p>
+         </div>
+         <div class="col-12 col-md-6 order-md-2 order-first">
+            <nav aria-label="breadcrumb" class="breadcrumb-header float-start float-lg-end">
+               <ol class="breadcrumb">
+                  <li class="breadcrumb-item"><a href="{% url 'backoffice:dashboard' %}">Dashboard</a></li>
+                  <li class="breadcrumb-item active" aria-current="page">{{ page_title }}</li>
+               </ol>
+            </nav>
+         </div>
+      </div>
+   </div>
+
+   <section class="section">
+      <div class="card">
+         <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+               <h4 class="card-title">Filtros</h4>
+               {% if perms.auth.add_user %}
+               <a href="{% url 'backoffice:user_add' %}" class="btn btn-primary">
+                  <i class="bi bi-plus-lg"></i> Nuevo
+               </a>
+               {% endif %}
+            </div>
+            <form method="get" class="row g-3">
+               <div class="col-md-4">
+                  <label for="{{ filter.form.username.id_for_label }}" class="form-label">
+                     {{ filter.form.username.label }}
+                  </label>
+                  {{ filter.form.username }}
+               </div>
+               <div class="col-md-4">
+                  <label for="{{ filter.form.email.id_for_label }}" class="form-label">
+                     {{ filter.form.email.label }}
+                  </label>
+                  {{ filter.form.email }}
+               </div>
+               <div class="col-md-2">
+                  <label for="{{ filter.form.is_active.id_for_label }}" class="form-label">
+                     {{ filter.form.is_active.label }}
+                  </label>
+                  {{ filter.form.is_active }}
+               </div>
+               <div class="col-md-2 d-flex align-items-end">
+                  <button type="submit" class="btn btn-primary w-100">
+                     <i class="bi bi-funnel"></i> Filtrar
+                  </button>
+               </div>
+            </form>
+         </div>
+         <div class="card-body">
+            <div class="table-responsive">
+               <table class="table table-striped">
+                  <thead>
+                     <tr>
+                        <th>No.</th>
+                        <th>Usuario</th>
+                        <th>Email</th>
+                        <th>Nombres</th>
+                        <th>Rol</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                     </tr>
+                  </thead>
+                  <tbody>
+                     {% for user_item in users %}
+                     <tr>
+                        <td>
+                           {% if page_obj %}
+                           {{ page_obj.start_index|add:forloop.counter0 }}
+                           {% else %}
+                           {{ forloop.counter }}
+                           {% endif %}
+                        </td>
+                        <td>{{ user_item.username }}</td>
+                        <td>{{ user_item.email }}</td>
+                        <td>{{ user_item.get_full_name }}</td>
+                        <td>
+                           {% if user_item.is_superuser %}
+                           <span class="badge bg-primary">SuperAdmin</span>
+                           {% elif user_item.is_staff %}
+                           <span class="badge bg-info">Staff</span>
+                           {% else %}
+                           <span class="badge bg-secondary">Usuario</span>
+                           {% endif %}
+                        </td>
+                        <td>
+                           {% if user_item.is_active %}
+                           <span class="badge bg-success">Activo</span>
+                           {% else %}
+                           <span class="badge bg-danger">Inactivo</span>
+                           {% endif %}
+                        </td>
+                        <td>
+                           <div class="d-flex gap-2">
+                              {% if perms.auth.change_user %}
+                              <a href="{% url 'backoffice:user_edit' user_item.pk %}" class="btn btn-sm btn-primary"
+                                 data-bs-toggle="tooltip" data-bs-placement="top" title="Editar">
+                                 <i class="bi bi-pencil"></i>
+                              </a>
+                              <button type="button"
+                                 class="btn btn-sm {% if user_item.is_active %}btn-warning{% else %}btn-success{% endif %}"
+                                 onclick="toggle_user_status({{ user_item.pk }}, '{{ user_item.username|escapejs }}', {{ user_item.is_active|lower }})"
+                                 data-bs-toggle="tooltip" data-bs-placement="top"
+                                 title="{% if user_item.is_active %}Desactivar{% else %}Activar{% endif %}">
+                                 <i
+                                    class="bi {% if user_item.is_active %}bi-person-slash{% else %}bi-person-check{% endif %}"></i>
+                              </button>
+                              {% endif %}
+                              {% if perms.auth.delete_user %}
+                              <button type="button" class="btn btn-sm btn-danger"
+                                 onclick="delete_user({{ user_item.pk }}, '{{ user_item.username|escapejs }}')"
+                                 data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                                 <i class="bi bi-trash"></i>
+                              </button>
+                              {% endif %}
+                              {% if not perms.auth.change_user and not perms.auth.delete_user %}
+                              <span class="text-muted">Sin permisos</span>
+                              {% endif %}
+                           </div>
+                        </td>
+                     </tr>
+                     {% empty %}
+                     <tr>
+                        <td colspan="7" class="text-center">No hay usuarios registrados.</td>
+                     </tr>
+                     {% endfor %}
+                  </tbody>
+               </table>
+            </div>
+
+            <!-- Pagination -->
+            {% include 'backoffice/services/includes/pagination.html' %}
+         </div>
+      </div>
+   </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'backoffice/extensions/sweetalert2/sweetalert2.min.js' %}"></script>
+<script>
+   /**
+    * Deletes a user asynchronously after user confirmation via SweetAlert2.
+    * @param {number} id - The ID of the user to delete.
+    * @param {string} username - The username to be deleted (for display).
+    * @returns {Promise<void>}
+    */
+   async function delete_user(id, username) {
+      const result = await Swal.fire({
+         title: '¿Estás seguro?',
+         text: `Eliminarás al usuario "${username}". Esta acción no se puede deshacer.`,
+         icon: 'warning',
+         showCancelButton: true,
+         confirmButtonColor: '#dc3545',
+         cancelButtonColor: '#6c757d',
+         confirmButtonText: 'Sí, eliminar',
+         cancelButtonText: 'Cancelar'
+      });
+
+      if (result.isConfirmed) {
+         try {
+            const csrf_token = get_cookie('csrftoken');
+            const response = await fetch(`/api/users/${id}/`, {
+               method: 'DELETE',
+               headers: {
+                  'X-CSRFToken': csrf_token,
+                  'Content-Type': 'application/json'
+               },
+            });
+
+            if (response.ok) {
+               await Swal.fire(
+                  '¡Eliminado!',
+                  'El usuario ha sido eliminado.',
+                  'success'
+               );
+               location.reload();
+            }
+            throw new Error('Hubo un problema al eliminar el usuario.');
+         } catch (error) {
+            await Swal.fire(
+               'Error',
+               error.message,
+               'error'
+            );
+         }
+      }
+   }
+
+   /**
+    * Toggles user status (active/inactive) asynchronously via API.
+    * @param {number} id - The ID of the user.
+    * @param {string} username - The username.
+    * @param {boolean} current_status - The current active status.
+    * @returns {Promise<void>}
+    */
+   async function toggle_user_status(id, username, current_status) {
+      const action = current_status ? 'desactivar' : 'activar';
+      const btn_color = current_status ? '#ffc107' : '#198754'; // Warning vs Success colors
+      const confirm_btn_text = current_status ? 'Sí, desactivar' : 'Sí, activar';
+
+      const result = await Swal.fire({
+         title: `¿${action.charAt(0).toUpperCase() + action.slice(1)} usuario?`,
+         text: `Estás a punto de ${action} al usuario "${username}".`,
+         icon: 'question',
+         showCancelButton: true,
+         confirmButtonColor: btn_color,
+         cancelButtonColor: '#6c757d',
+         confirmButtonText: confirm_btn_text,
+         cancelButtonText: 'Cancelar'
+      });
+
+      if (result.isConfirmed) {
+         try {
+            const csrf_token = get_cookie('csrftoken');
+            const response = await fetch(`/api/users/${id}/`, {
+               method: 'PATCH',
+               headers: {
+                  'X-CSRFToken': csrf_token,
+                  'Content-Type': 'application/json'
+               },
+               body: JSON.stringify({
+                  is_active: !current_status
+               })
+            });
+
+            if (response.ok) {
+               await Swal.fire(
+                  '¡Actualizado!',
+                  `El usuario ha sido ${current_status ? 'desactivado' : 'activado'} correctamente.`,
+                  'success'
+               );
+               location.reload();
+               return
+            }
+            throw new Error('Hubo un problema al actualizar el estado del usuario.');
+
+         } catch (error) {
+            await Swal.fire(
+               'Error',
+               error.message,
+               'error'
+            );
+         }
+      }
+   }
+</script>
+{% endblock %}
