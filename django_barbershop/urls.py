@@ -22,4 +22,5 @@ urlpatterns = [
     # path('admin/', admin.site.urls),
     path("", include(("core.apps.storefront.urls", "storefront"))),
     path("admin/", include(("core.apps.backoffice.urls", "backoffice"))),
+    path("api/", include("core.api.urls")),
 ]
