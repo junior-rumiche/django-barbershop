@@ -1,0 +1,400 @@
+{% extends 'base/backoffice/base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="page-heading">
+    <div class="page-title">
+        <div class="row">
+            <div class="col-12 col-md-6 order-md-1 order-last">
+                <h3>{{ page_title }}</h3>
+                <p class="text-subtitle text-muted">Gestión de ventas y servicios.</p>
+            </div>
+            <div class="col-12 col-md-6 order-md-2 order-first">
+                <nav aria-label="breadcrumb" class="breadcrumb-header float-start float-lg-end">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{% url 'backoffice:dashboard' %}">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'backoffice:order_list' %}">Ordenes</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">{{ page_title }}</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <section id="basic-vertical-layouts">
+        <div class="row match-height">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-content">
+                        <div class="card-body">
+                            <form class="form form-vertical" method="post" id="order-form">
+                                {% csrf_token %}
+                                
+                                {% if form.non_field_errors %}
+                                <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+                                {% endif %}
+
+                                <div class="form-body">
+                                    <!-- Encabezado de la Orden -->
+                                    <div class="row mb-4 p-3 border rounded bg-light">
+                                        <h5 class="card-title mb-3">Información General</h5>
+                                        <div class="col-12 col-md-4">
+                                            <div class="form-group">
+                                                <label class="fw-bold">Registrado por:</label>
+                                                <input type="text" class="form-control" value="{{ user.get_full_name|default:user.username }}" readonly disabled>
+                                            </div>
+                                        </div>
+                                        <div class="col-12 col-md-4">
+                                            <div class="form-group">
+                                                <label for="{{ form.client_name.id_for_label }}" class="fw-bold">{{ form.client_name.label }}</label>
+                                                {{ form.client_name }}
+                                                {% if form.client_name.errors %}<div class="text-danger small">{{ form.client_name.errors }}</div>{% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="col-12 col-md-4">
+                                            <div class="form-group">
+                                                <label for="{{ form.status.id_for_label }}" class="fw-bold">{{ form.status.label }}</label>
+                                                {{ form.status }}
+                                                {% if form.status.errors %}<div class="text-danger small">{{ form.status.errors }}</div>{% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Detalle de Items -->
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <h5>Items de la Orden</h5>
+                                                <button type="button" class="btn btn-primary btn-sm" id="add-item-btn">
+                                                    <i class="bi bi-plus-lg"></i> Agregar Item
+                                                </button>
+                                            </div>
+                                            
+                                            {{ items.management_form }}
+                                            
+                                            <div class="table-responsive">
+                                                <table class="table table-hover" id="items-table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th style="width: 40%;">Producto / Servicio</th>
+                                                            <th style="width: 15%;">Precio Unit.</th>
+                                                            <th style="width: 15%;">Cantidad</th>
+                                                            <th style="width: 15%;">Subtotal</th>
+                                                            <th style="width: 10%;">Acción</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="items-container">
+                                                        {% for item_form in items %}
+                                                        <tr class="item-row">
+                                                            {{ item_form.id }}
+                                                            <td>
+                                                                <div class="input-group">
+                                                                    {{ item_form.product }}
+                                                                    <button class="btn btn-outline-secondary open-product-modal" type="button">
+                                                                        <i class="bi bi-search"></i>
+                                                                    </button>
+                                                                </div>
+                                                                {% if item_form.product.errors %}<div class="text-danger small">{{ item_form.product.errors }}</div>{% endif %}
+                                                            </td>
+                                                            <td>
+                                                                {{ item_form.unit_price }}
+                                                                {% if item_form.unit_price.errors %}<div class="text-danger small">{{ item_form.unit_price.errors }}</div>{% endif %}
+                                                            </td>
+                                                            <td>
+                                                                {{ item_form.quantity }}
+                                                                {% if item_form.quantity.errors %}<div class="text-danger small">{{ item_form.quantity.errors }}</div>{% endif %}
+                                                            </td>
+                                                            <td>
+                                                                <input type="text" class="form-control row-subtotal" readonly value="0.00">
+                                                            </td>
+                                                            <td>
+                                                                {% if items.can_delete %}
+                                                                    <div class="d-none">{{ item_form.DELETE }}</div>
+                                                                    <button type="button" class="btn btn-danger btn-sm remove-row-btn">
+                                                                        <i class="bi bi-trash"></i>
+                                                                    </button>
+                                                                {% endif %}
+                                                            </td>
+                                                        </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                    <tfoot>
+                                                        <tr>
+                                                            <td colspan="3" class="text-end fw-bold fs-5">Total General:</td>
+                                                            <td colspan="2" class="fw-bold fs-5 text-primary">S/ <span id="grand-total">0.00</span></td>
+                                                        </tr>
+                                                    </tfoot>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Botones de Acción -->
+                                    <div class="col-12 d-flex justify-content-end mt-4">
+                                        <a href="{% url 'backoffice:order_list' %}" class="btn btn-light-secondary me-1 mb-1">
+                                            <i class="bi bi-x-circle me-2"></i> Cancelar
+                                        </a>
+                                        <button type="button" id="save-btn" class="btn btn-success me-1 mb-1">
+                                            <i class="bi bi-check-circle me-2"></i> Guardar Orden
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Template para filas vacías (oculto) -->
+    <table class="d-none">
+        <tbody id="empty-form-template">
+            <tr class="item-row">
+                {{ items.empty_form.id }}
+                <td>
+                    <div class="input-group">
+                        {{ items.empty_form.product }}
+                        <button class="btn btn-outline-secondary open-product-modal" type="button">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
+                </td>
+                <td>{{ items.empty_form.unit_price }}</td>
+                <td>{{ items.empty_form.quantity }}</td>
+                <td><input type="text" class="form-control row-subtotal" readonly value="0.00"></td>
+                <td>
+                    {% if items.can_delete %}
+                        <div class="d-none">{{ items.empty_form.DELETE }}</div>
+                        <button type="button" class="btn btn-danger btn-sm remove-row-btn">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    {% endif %}
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- Modal de Selección de Productos -->
+    <div class="modal fade" id="productModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header bg-primary">
+                    <h5 class="modal-title text-white">Seleccionar Producto / Servicio</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="text" class="form-control" id="product-search-input" placeholder="Buscar por nombre...">
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>Categoría</th>
+                                    <th>Precio</th>
+                                    <th>Stock</th>
+                                    <th>Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="modal-products-body">
+                                <!-- Llenado por JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-center" id="modal-loading" style="display:none;">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Cargando...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'backoffice/extensions/sweetalert2/sweetalert2.min.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // --- Variables y Selectores ---
+    const addItemBtn = document.getElementById('add-item-btn');
+    const itemsContainer = document.getElementById('items-container');
+    const emptyFormTemplate = document.getElementById('empty-form-template').innerHTML;
+    const totalFormsInput = document.getElementById('id_items-TOTAL_FORMS');
+    const productModal = new bootstrap.Modal(document.getElementById('productModal'));
+    let activeRow = null; // Para saber qué fila abrió el modal
+
+    // --- Funciones de Cálculo ---
+    function calculateTotals() {
+        let grandTotal = 0;
+        document.querySelectorAll('.item-row').forEach(row => {
+            // Si la fila está marcada para borrar (campo hidden DELETE), ignorarla
+            const deleteInput = row.querySelector('input[name$="-DELETE"]');
+            if (deleteInput && deleteInput.checked) {
+                row.style.display = 'none'; // Ocultar visualmente si se reactiva lógica de borrado Django
+                return;
+            }
+            if (row.style.display === 'none') return;
+
+            const quantity = parseFloat(row.querySelector('.quantity-input').value) || 0;
+            const price = parseFloat(row.querySelector('.price-input').value) || 0;
+            const subtotal = quantity * price;
+            
+            row.querySelector('.row-subtotal').value = subtotal.toFixed(2);
+            grandTotal += subtotal;
+        });
+        document.getElementById('grand-total').innerText = grandTotal.toFixed(2);
+    }
+
+    // --- Eventos Delegados (Tabla Principal) ---
+    itemsContainer.addEventListener('input', function(e) {
+        if (e.target.classList.contains('quantity-input') || e.target.classList.contains('price-input')) {
+            calculateTotals();
+        }
+    });
+
+    itemsContainer.addEventListener('click', function(e) {
+        // Eliminar Fila
+        if (e.target.closest('.remove-row-btn')) {
+            const row = e.target.closest('.item-row');
+            const deleteInput = row.querySelector('input[name$="-DELETE"]');
+            if (deleteInput) {
+                deleteInput.checked = true;
+                row.style.display = 'none';
+            } else {
+                // Si es una fila nueva dinámica que aún no se ha guardado, podemos removerla del DOM
+                // Pero para mantener el índice sync con Django, mejor ocultar y dejar que POST lo ignore si está vacío
+                // O simplemente removerla si usamos lógica de reemplazo de índices (complejo).
+                // Estrategia simple: Marcar DELETE si existe, sino (fila extra) remover.
+                row.remove();
+                // Update TOTAL_FORMS count? Django espera índices consecutivos. 
+                // Lo más seguro en Django formsets JS simples es ocultar y marcar DELETE.
+            }
+            calculateTotals();
+        }
+
+        // Abrir Modal
+        if (e.target.closest('.open-product-modal')) {
+            activeRow = e.target.closest('.item-row');
+            loadProducts(); // Cargar productos iniciales
+            productModal.show();
+        }
+    });
+
+    // --- Agregar Nueva Fila ---
+    addItemBtn.addEventListener('click', function() {
+        const formIdx = totalFormsInput.value;
+        const newRowHtml = emptyFormTemplate.replace(/__prefix__/g, formIdx);
+        itemsContainer.insertAdjacentHTML('beforeend', newRowHtml);
+        totalFormsInput.value = parseInt(formIdx) + 1;
+        
+        // Inicializar selects o inputs si fuera necesario
+        calculateTotals();
+    });
+
+    // --- Lógica del Modal ---
+    const searchInput = document.getElementById('product-search-input');
+    const modalBody = document.getElementById('modal-products-body');
+    const modalLoading = document.getElementById('modal-loading');
+    let searchTimeout = null;
+
+    searchInput.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            loadProducts(this.value);
+        }, 300);
+    });
+
+    async function loadProducts(query = '') {
+        modalBody.innerHTML = '';
+        modalLoading.style.display = 'block';
+        
+        try {
+            let url = `/api/products/?format=json`;
+            if (query) {
+                url += `&name=${encodeURIComponent(query)}`;
+            }
+            
+            const response = await fetch(url);
+            const data = await response.json(); // Django Rest Framework paginates by default usually
+            const products = data.results ? data.results : data; // Handle pagination or list
+
+            if (products.length === 0) {
+                modalBody.innerHTML = '<tr><td colspan="5" class="text-center">No se encontraron productos.</td></tr>';
+                return;
+            }
+
+            products.forEach(p => {
+                const isService = p.is_service;
+                const stockBadge = isService 
+                    ? '<span class="badge bg-info">Servicio</span>' 
+                    : (p.stock_qty > 0 ? `<span class="badge bg-success">${p.stock_qty}</span>` : '<span class="badge bg-danger">0</span>');
+                
+                const tr = document.createElement('tr');
+                tr.style.cursor = 'pointer';
+                tr.innerHTML = `
+                    <td>${p.name}</td>
+                    <td>${p.category_name || '-'}</td>
+                    <td>S/ ${p.price}</td>
+                    <td>${stockBadge}</td>
+                    <td><button class="btn btn-sm btn-primary select-product-btn">Seleccionar</button></td>
+                `;
+                
+                // Evento de selección
+                tr.addEventListener('click', () => selectProduct(p));
+                modalBody.appendChild(tr);
+            });
+
+        } catch (error) {
+            console.error(error);
+            modalBody.innerHTML = '<tr><td colspan="5" class="text-center text-danger">Error al cargar productos.</td></tr>';
+        } finally {
+            modalLoading.style.display = 'none';
+        }
+    }
+
+    function selectProduct(product) {
+        if (!activeRow) return;
+
+        // Llenar campos en la fila activa
+        const select = activeRow.querySelector('.product-select');
+        const priceInput = activeRow.querySelector('.price-input');
+        const quantityInput = activeRow.querySelector('.quantity-input');
+
+        // Establecer valor del Select (debe existir la opción, si no, la agregamos temporalmente)
+        // Como el select carga todos los productos al inicio (django form standard), debería funcionar.
+        // Si el producto es nuevo y no está en el select inicial, habría problemas, pero asumimos carga completa.
+        select.value = product.id; 
+        
+        // Si select.value falla (producto paginado no cargado en select inicial Django),
+        // deberíamos crear la opción. Django forms renderiza todos los FK por defecto.
+        if (select.value != product.id) {
+             const option = new Option(product.name, product.id);
+             select.add(option, undefined);
+             select.value = product.id;
+        }
+
+        priceInput.value = product.price;
+        quantityInput.value = 1;
+
+        calculateTotals();
+        productModal.hide();
+        activeRow = null;
+    }
+    
+    // --- Guardado ---
+    document.getElementById('save-btn').addEventListener('click', function() {
+        document.getElementById('order-form').submit();
+    });
+
+    // Calc inicial por si es Edición
+    calculateTotals();
+});
+</script>
+{% endblock %}

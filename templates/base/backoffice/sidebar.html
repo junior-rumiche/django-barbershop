@@ -65,8 +65,8 @@
                 <li class="sidebar-title text-muted">Operaciones</li>
 
                 {% if perms.backoffice.view_order %}
-                <li class="sidebar-item  ">
-                    <a href="ui-file-uploader.html" class='sidebar-link'>
+                <li class="sidebar-item {% if 'order_' in request.resolver_match.url_name %}active{% endif %}">
+                    <a href="{% url 'backoffice:order_list' %}" class='sidebar-link'>
                         <i class="bi bi-receipt"></i>
                         <span>Ordenes</span>
                     </a>

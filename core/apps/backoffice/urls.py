@@ -22,6 +22,12 @@ from core.apps.backoffice.views.products import (
     ProductUpdateView,
     ProductDeleteView,
 )
+from core.apps.backoffice.views.orders import (
+    OrderListView,
+    OrderCreateView,
+    OrderUpdateView,
+    OrderDeleteView,
+)
 
 
 urlpatterns = [
@@ -55,4 +61,10 @@ urlpatterns = [
     path("services/add/", ProductCreateView.as_view(), {"is_service": True}, name="service_add"),
     path("services/<int:pk>/edit/", ProductUpdateView.as_view(), {"is_service": True}, name="service_edit"),
     path("services/<int:pk>/delete/", ProductDeleteView.as_view(), {"is_service": True}, name="service_delete"),
+
+    # Orders URLs
+    path("orders/", OrderListView.as_view(), name="order_list"),
+    path("orders/add/", OrderCreateView.as_view(), name="order_add"),
+    path("orders/<int:pk>/edit/", OrderUpdateView.as_view(), name="order_edit"),
+    path("orders/<int:pk>/delete/", OrderDeleteView.as_view(), name="order_delete"),
 ]

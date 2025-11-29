@@ -1,7 +1,33 @@
 import django_filters
 from django import forms
 from django.contrib.auth.models import User, Group
-from core.apps.backoffice.models import Category, Product
+from core.apps.backoffice.models import Category, Product, Order
+
+
+class OrderFilter(django_filters.FilterSet):
+    created_by = django_filters.ModelChoiceFilter(
+        queryset=User.objects.filter(is_active=True),
+        label='Registrado por',
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    client_name = django_filters.CharFilter(
+        lookup_expr='icontains',
+        label='Cliente',
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Buscar cliente...'})
+    )
+    status = django_filters.ChoiceFilter(
+        choices=Order.STATUS_CHOICES,
+        label='Estado',
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    created_at = django_filters.DateFromToRangeFilter(
+        label='Rango de Fechas',
+        widget=django_filters.widgets.RangeWidget(attrs={'class': 'form-control', 'type': 'date'})
+    )
+
+    class Meta:
+        model = Order
+        fields = ['created_by', 'client_name', 'status', 'created_at']
 
 
 class ProductFilter(django_filters.FilterSet):

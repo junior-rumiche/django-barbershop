@@ -1,7 +1,38 @@
 from django import forms
 from django.contrib.auth.models import User, Group, Permission
 from django.apps import apps
-from core.apps.backoffice.models import Category, Product
+from core.apps.backoffice.models import Category, Product, Order, OrderItem
+
+
+class OrderForm(forms.ModelForm):
+    class Meta:
+        model = Order
+        fields = ["client_name", "status"]
+        widgets = {
+            "client_name": forms.TextInput(
+                attrs={"class": "form-control", "placeholder": "Cliente Ocasional"}
+            ),
+            "status": forms.Select(attrs={"class": "form-select"}),
+        }
+        labels = {
+            "client_name": "Cliente",
+            "status": "Estado",
+        }
+
+
+class OrderItemForm(forms.ModelForm):
+    class Meta:
+        model = OrderItem
+        fields = ["product", "quantity", "unit_price"]
+        widgets = {
+            "product": forms.Select(attrs={"class": "form-select product-select"}),
+            "quantity": forms.NumberInput(
+                attrs={"class": "form-control quantity-input", "min": "1"}
+            ),
+            "unit_price": forms.NumberInput(
+                attrs={"class": "form-control price-input", "readonly": "readonly"}
+            ),
+        }
 
 
 class ProductForm(forms.ModelForm):
