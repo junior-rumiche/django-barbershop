@@ -1,16 +1,6 @@
 from rest_framework import viewsets, permissions
 from django.contrib.auth.models import User, Group
-from core.apps.backoffice.models import Service
-from core.api.serializers import ServiceSerializer, UserSerializer, GroupSerializer
-
-class ServiceViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint that allows services to be viewed or edited.
-    """
-    queryset = Service.objects.all().order_by('-id')
-    serializer_class = ServiceSerializer
-    permission_classes = [permissions.DjangoModelPermissions]
-
+from core.api.serializers import UserSerializer, GroupSerializer
 
 class UserViewSet(viewsets.ModelViewSet):
     """
