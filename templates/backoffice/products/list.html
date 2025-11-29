@@ -70,8 +70,8 @@
                         <th>Nombre</th>
                         <th>Categoría</th>
                         <th>Precio</th>
-                        <th>Costo</th>
                         {% if not is_service %}
+                        <th>Costo</th>
                         <th>Stock</th>
                         {% endif %}
                         <th>Acciones</th>
@@ -90,8 +90,8 @@
                         <td>{{ product.name }}</td>
                         <td>{{ product.category.name|default:"-" }}</td>
                         <td>S/ {{ product.price }}</td>
-                        <td>S/ {{ product.cost }}</td>
                         {% if not is_service %}
+                        <td>S/ {{ product.cost }}</td>
                         <td>
                               {% if product.stock_qty <= product.min_stock_alert %}
                               <span class="badge bg-danger">{{ product.stock_qty }}</span>

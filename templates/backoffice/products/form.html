@@ -71,7 +71,8 @@
                                                 {% endif %}
                                             </div>
                                         </div>
-                                        <div class="col-12 col-md-6">
+                                        {% if not is_service %}
+                                        <div class="col-12 col-md-6 product-only-field">
                                             <div class="form-group">
                                                 <label for="{{ form.cost.id_for_label }}">{{ form.cost.label }}</label>
                                                 {{ form.cost }}
@@ -80,6 +81,7 @@
                                                 {% endif %}
                                             </div>
                                         </div>
+                                        {% endif %}
 
                                         <!-- Campo oculto para is_service -->
                                         <div class="d-none">
@@ -88,7 +90,7 @@
 
                                         {% if not is_service %}
                                         <!-- Stock (Solo visible si no es servicio) -->
-                                        <div class="col-12 col-md-6 stock-field">
+                                        <div class="col-12 col-md-6 product-only-field">
                                             <div class="form-group">
                                                 <label for="{{ form.stock_qty.id_for_label }}">{{ form.stock_qty.label }}</label>
                                                 {{ form.stock_qty }}
@@ -97,7 +99,7 @@
                                                 {% endif %}
                                             </div>
                                         </div>
-                                        <div class="col-12 col-md-6 stock-field">
+                                        <div class="col-12 col-md-6 product-only-field">
                                             <div class="form-group">
                                                 <label for="{{ form.min_stock_alert.id_for_label }}">{{ form.min_stock_alert.label }}</label>
                                                 {{ form.min_stock_alert }}
