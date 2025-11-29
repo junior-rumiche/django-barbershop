@@ -1,0 +1,193 @@
+{% extends 'base/backoffice/base.html' %}
+{% load static %}
+
+{% block styles %}
+<link rel="stylesheet" href="{% static 'backoffice/extensions/sweetalert2/sweetalert2.min.css' %}">
+{% endblock %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="page-heading">
+   <div class="page-title">
+      <div class="row">
+         <div class="col-12 col-md-6 order-md-1 order-last">
+            <h3>{{ page_title }}</h3>
+            <p class="text-subtitle text-muted">Administra el catálogo de {% if is_service %}servicios{% else %}productos{% endif %}.</p>
+         </div>
+         <div class="col-12 col-md-6 order-md-2 order-first">
+            <nav aria-label="breadcrumb" class="breadcrumb-header float-start float-lg-end">
+               <ol class="breadcrumb">
+                  <li class="breadcrumb-item"><a href="{% url 'backoffice:dashboard' %}">Dashboard</a></li>
+                  <li class="breadcrumb-item active" aria-current="page">{{ page_title }}</li>
+               </ol>
+            </nav>
+         </div>
+      </div>
+   </div>
+
+   <section class="section">
+      <div class="card">
+         <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+               <h4 class="card-title">Filtros</h4>
+               {% if perms.backoffice.add_product %}
+               <a href="{% if is_service %}{% url 'backoffice:service_add' %}{% else %}{% url 'backoffice:product_add' %}{% endif %}" class="btn btn-primary">
+                  <i class="bi bi-plus-lg"></i> Nuevo
+               </a>
+               {% endif %}
+            </div>
+            <form method="get" class="row g-3">
+               <div class="col-md-6">
+                  <label for="{{ filter.form.name.id_for_label }}" class="form-label">
+                     {{ filter.form.name.label }}
+                  </label>
+                  {{ filter.form.name }}
+               </div>
+               <div class="col-md-4">
+                  <label for="{{ filter.form.category.id_for_label }}" class="form-label">
+                     {{ filter.form.category.label }}
+                  </label>
+                  {{ filter.form.category }}
+               </div>
+               <!-- Ocultamos el filtro de is_service porque ya está filtrado por contexto -->
+               <div class="d-none">
+                  {{ filter.form.is_service }}
+               </div>
+               <div class="col-md-2 d-flex align-items-end">
+                  <button type="submit" class="btn btn-primary w-100">
+                     <i class="bi bi-funnel"></i> Filtrar
+                  </button>
+               </div>
+            </form>
+         </div>
+         <div class="card-body">
+            <div class="table-responsive">
+               <table class="table table-striped">
+                  <thead>
+                     <tr>
+                        <th>No.</th>
+                        <th>Nombre</th>
+                        <th>Categoría</th>
+                        <th>Precio</th>
+                        <th>Costo</th>
+                        {% if not is_service %}
+                        <th>Stock</th>
+                        {% endif %}
+                        <th>Acciones</th>
+                     </tr>
+                  </thead>
+                  <tbody>
+                     {% for product in products %}
+                     <tr>
+                        <td>
+                           {% if page_obj %}
+                           {{ page_obj.start_index|add:forloop.counter0 }}
+                           {% else %}
+                           {{ forloop.counter }}
+                           {% endif %}
+                        </td>
+                        <td>{{ product.name }}</td>
+                        <td>{{ product.category.name|default:"-" }}</td>
+                        <td>S/ {{ product.price }}</td>
+                        <td>S/ {{ product.cost }}</td>
+                        {% if not is_service %}
+                        <td>
+                              {% if product.stock_qty <= product.min_stock_alert %}
+                              <span class="badge bg-danger">{{ product.stock_qty }}</span>
+                              {% else %}
+                              <span class="badge bg-success">{{ product.stock_qty }}</span>
+                              {% endif %}
+                        </td>
+                        {% endif %}
+                        <td>
+                           <div class="d-flex gap-2">
+                              {% if perms.backoffice.change_product %}
+                              <a href="{% if is_service %}{% url 'backoffice:service_edit' product.pk %}{% else %}{% url 'backoffice:product_edit' product.pk %}{% endif %}" class="btn btn-sm btn-primary"
+                                 data-bs-toggle="tooltip" data-bs-placement="top" title="Editar">
+                                 <i class="bi bi-pencil"></i>
+                              </a>
+                              {% endif %}
+                              {% if perms.backoffice.delete_product %}
+                              <button type="button" class="btn btn-sm btn-danger"
+                                 onclick="delete_product({{ product.pk }}, '{{ product.name|escapejs }}')"
+                                 data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                                 <i class="bi bi-trash"></i>
+                              </button>
+                              {% endif %}
+                              {% if not perms.backoffice.change_product and not perms.backoffice.delete_product %}
+                              <span class="text-muted">Sin permisos</span>
+                              {% endif %}
+                           </div>
+                        </td>
+                     </tr>
+                     {% empty %}
+                     <tr>
+                        <td colspan="{% if is_service %}6{% else %}7{% endif %}" class="text-center">No hay registros.</td>
+                     </tr>
+                     {% endfor %}
+                  </tbody>
+               </table>
+            </div>
+
+            <!-- Pagination -->
+            {% include 'backoffice/includes/pagination.html' %}
+         </div>
+      </div>
+   </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'backoffice/extensions/sweetalert2/sweetalert2.min.js' %}"></script>
+<script>
+   /**
+    * Deletes a product asynchronously after user confirmation via SweetAlert2.
+    * @param {number} id - The ID of the product to delete.
+    * @param {string} name - The name of the product to be deleted (for display).
+    * @returns {Promise<void>}
+    */
+   async function delete_product(id, name) {
+      const result = await Swal.fire({
+         title: '¿Estás seguro?',
+         text: `Eliminarás "${name}". Esta acción no se puede deshacer.`,
+         icon: 'warning',
+         showCancelButton: true,
+         confirmButtonColor: '#dc3545',
+         cancelButtonColor: '#6c757d',
+         confirmButtonText: 'Sí, eliminar',
+         cancelButtonText: 'Cancelar'
+      });
+
+      if (result.isConfirmed) {
+         try {
+            const csrf_token = get_cookie('csrftoken');
+            const response = await fetch(`/api/products/${id}/`, {
+               method: 'DELETE',
+               headers: {
+                  'X-CSRFToken': csrf_token,
+                  'Content-Type': 'application/json'
+               },
+            });
+
+            if (response.ok) {
+               await Swal.fire(
+                  '¡Eliminado!',
+                  'El registro ha sido eliminado.',
+                  'success'
+               );
+               location.reload();
+               return;
+            }
+            throw new Error('Hubo un problema al eliminar el registro.');
+         } catch (error) {
+            await Swal.fire(
+               'Error',
+               error.message,
+               'error'
+            );
+         }
+      }
+   }
+</script>
+{% endblock %}

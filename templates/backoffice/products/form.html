@@ -1,0 +1,145 @@
+{% extends 'base/backoffice/base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="page-heading">
+    <div class="page-title">
+        <div class="row">
+            <div class="col-12 col-md-6 order-md-1 order-last">
+                <h3>{{ page_title }}</h3>
+                <p class="text-subtitle text-muted">Complete el formulario para guardar.</p>
+            </div>
+            <div class="col-12 col-md-6 order-md-2 order-first">
+                <nav aria-label="breadcrumb" class="breadcrumb-header float-start float-lg-end">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{% url 'backoffice:dashboard' %}">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="{% if is_service %}{% url 'backoffice:service_list' %}{% else %}{% url 'backoffice:product_list' %}{% endif %}">{% if is_service %}Servicios{% else %}Productos{% endif %}</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">{{ page_title }}</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <section id="basic-vertical-layouts">
+        <div class="row match-height">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-content">
+                        <div class="card-body">
+                            <form class="form form-vertical" method="post">
+                                {% csrf_token %}
+                                <div class="form-body">
+                                    <div class="row">
+                                        {% if form.non_field_errors %}
+                                        <div class="col-12">
+                                            <div class="alert alert-danger">
+                                                {{ form.non_field_errors }}
+                                            </div>
+                                        </div>
+                                        {% endif %}
+
+                                        <!-- Nombre y Categoría -->
+                                        <div class="col-12 col-md-6">
+                                            <div class="form-group">
+                                                <label for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>
+                                                {{ form.name }}
+                                                {% if form.name.errors %}
+                                                <div class="text-danger small">{{ form.name.errors }}</div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="col-12 col-md-6">
+                                            <div class="form-group">
+                                                <label for="{{ form.category.id_for_label }}">{{ form.category.label }}</label>
+                                                {{ form.category }}
+                                                {% if form.category.errors %}
+                                                <div class="text-danger small">{{ form.category.errors }}</div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+
+                                        <!-- Precios -->
+                                        <div class="col-12 col-md-6">
+                                            <div class="form-group">
+                                                <label for="{{ form.price.id_for_label }}">{{ form.price.label }}</label>
+                                                {{ form.price }}
+                                                {% if form.price.errors %}
+                                                <div class="text-danger small">{{ form.price.errors }}</div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="col-12 col-md-6">
+                                            <div class="form-group">
+                                                <label for="{{ form.cost.id_for_label }}">{{ form.cost.label }}</label>
+                                                {{ form.cost }}
+                                                {% if form.cost.errors %}
+                                                <div class="text-danger small">{{ form.cost.errors }}</div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+
+                                        <!-- Campo oculto para is_service -->
+                                        <div class="d-none">
+                                            {{ form.is_service }}
+                                        </div>
+
+                                        {% if not is_service %}
+                                        <!-- Stock (Solo visible si no es servicio) -->
+                                        <div class="col-12 col-md-6 stock-field">
+                                            <div class="form-group">
+                                                <label for="{{ form.stock_qty.id_for_label }}">{{ form.stock_qty.label }}</label>
+                                                {{ form.stock_qty }}
+                                                {% if form.stock_qty.errors %}
+                                                <div class="text-danger small">{{ form.stock_qty.errors }}</div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="col-12 col-md-6 stock-field">
+                                            <div class="form-group">
+                                                <label for="{{ form.min_stock_alert.id_for_label }}">{{ form.min_stock_alert.label }}</label>
+                                                {{ form.min_stock_alert }}
+                                                {% if form.min_stock_alert.errors %}
+                                                <div class="text-danger small">{{ form.min_stock_alert.errors }}</div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        {% endif %}
+
+                                        <!-- Botones -->
+                                        <div class="col-12 d-flex justify-content-end mt-3">
+                                            <a href="{% if is_service %}{% url 'backoffice:service_list' %}{% else %}{% url 'backoffice:product_list' %}{% endif %}"
+                                                class="btn btn-light-secondary me-1 mb-1">
+                                                <i class="bi bi-x-circle me-2"></i>
+                                                Cancelar
+                                            </a>
+                                            <button type="submit" class="btn btn-primary me-1 mb-1">
+                                                <i class="bi bi-check-circle me-2"></i>
+                                                Guardar
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Script to ensure is_service matches the context (double safety besides get_initial)
+    document.addEventListener('DOMContentLoaded', function() {
+        const isServiceCheck = document.getElementById('{{ form.is_service.id_for_label }}');
+        if(isServiceCheck) {
+            isServiceCheck.checked = {{ is_service|yesno:"true,false" }};
+        }
+    });
+</script>
+{% endblock %}

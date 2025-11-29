@@ -32,7 +32,9 @@
                 </li>
 
 
+                {% if perms.backoffice.view_category or perms.backoffice.view_product %}
                 <li class="sidebar-title text-muted">Catalogo</li>
+                {% endif %}
 
                 {% if perms.backoffice.view_category %}
                 <li class="sidebar-item {% if 'category_' in request.resolver_match.url_name %}active{% endif %}">
@@ -43,12 +45,21 @@
                 </li>
                 {% endif %}
 
-                <li class="sidebar-item  ">
-                    <a href="ui-file-uploader.html" class='sidebar-link'>
+                {% if perms.backoffice.view_product %}
+                <li class="sidebar-item {% if 'service_' in request.resolver_match.url_name %}active{% endif %}">
+                    <a href="{% url 'backoffice:service_list' %}" class='sidebar-link'>
+                        <i class="bi bi-scissors"></i>
+                        <span>Servicios</span>
+                    </a>
+                </li>
+
+                <li class="sidebar-item {% if 'product_' in request.resolver_match.url_name %}active{% endif %}">
+                    <a href="{% url 'backoffice:product_list' %}" class='sidebar-link'>
                         <i class="bi bi-box-seam"></i>
                         <span>Productos</span>
                     </a>
                 </li>
+                {% endif %}
 
 
                 <li class="sidebar-title text-muted">Operaciones</li>

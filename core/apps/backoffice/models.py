@@ -24,27 +24,31 @@ class Category(models.Model):
 
 
 class Product(models.Model):
-    """
-    Represents a product in the catalog.
-    """
-
-    name = models.CharField(max_length=100, unique=True, verbose_name="Nombre")
-    description = models.TextField(blank=True, null=True, verbose_name="Descripción")
-    price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Precio")
-    stock = models.IntegerField(default=0, verbose_name="Stock")
-    status = models.BooleanField(default=True, verbose_name="Estado")
+    name = models.CharField(max_length=200, verbose_name="Nombre del Producto/Servicio")
     category = models.ForeignKey(
-        Category,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        verbose_name="Categoría",
-        related_name="products"
+        Category, on_delete=models.SET_NULL, null=True, verbose_name="Categoría"
+    )
+
+    price = models.DecimalField(
+        max_digits=10, decimal_places=2, verbose_name="Precio de Venta"
+    )
+    cost = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0, verbose_name="Costo de Compra"
+    )
+
+    is_service = models.BooleanField(
+        default=False,
+        verbose_name="¿Es Servicio?",
+        help_text="Marcar si es corte, barba, etc.",
+    )
+    stock_qty = models.IntegerField(default=0, verbose_name="Stock Actual")
+    min_stock_alert = models.IntegerField(
+        default=5, verbose_name="Alerta de Stock Mínimo"
     )
 
     class Meta:
-        verbose_name = "Producto"
-        verbose_name_plural = "Productos"
+        verbose_name = "Producto / Servicio"
+        verbose_name_plural = "Productos y Servicios"
 
     def __str__(self):
-        return self.name
+        return f"{self.name} ({'Servicio' if self.is_service else 'Producto'})"

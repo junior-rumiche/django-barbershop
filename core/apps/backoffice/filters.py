@@ -1,7 +1,28 @@
 import django_filters
 from django import forms
 from django.contrib.auth.models import User, Group
-from core.apps.backoffice.models import Category
+from core.apps.backoffice.models import Category, Product
+
+
+class ProductFilter(django_filters.FilterSet):
+    name = django_filters.CharFilter(
+        lookup_expr='icontains',
+        label='Nombre',
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Buscar por nombre...'})
+    )
+    category = django_filters.ModelChoiceFilter(
+        queryset=Category.objects.filter(status=True),
+        label='Categoría',
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    is_service = django_filters.BooleanFilter(
+        label='Tipo',
+        widget=forms.Select(attrs={'class': 'form-select'}, choices=[('', 'Todos'), ('true', 'Servicio'), ('false', 'Producto')])
+    )
+
+    class Meta:
+        model = Product
+        fields = ['name', 'category', 'is_service']
 
 
 class CategoryFilter(django_filters.FilterSet):

@@ -1,7 +1,56 @@
 from django import forms
 from django.contrib.auth.models import User, Group, Permission
 from django.apps import apps
-from core.apps.backoffice.models import Category
+from core.apps.backoffice.models import Category, Product
+
+
+class ProductForm(forms.ModelForm):
+    class Meta:
+        model = Product
+        fields = [
+            "name",
+            "category",
+            "price",
+            "cost",
+            "is_service",
+            "stock_qty",
+            "min_stock_alert",
+        ]
+        widgets = {
+            "name": forms.TextInput(
+                attrs={"class": "form-control", "placeholder": "Nombre del producto"}
+            ),
+            "category": forms.Select(attrs={"class": "form-select"}),
+            "price": forms.NumberInput(
+                attrs={"class": "form-control", "placeholder": "0.00"}
+            ),
+            "cost": forms.NumberInput(
+                attrs={"class": "form-control", "placeholder": "0.00"}
+            ),
+            "is_service": forms.CheckboxInput(
+                attrs={"class": "form-check-input", "role": "switch"}
+            ),
+            "stock_qty": forms.NumberInput(
+                attrs={"class": "form-control", "placeholder": "0"}
+            ),
+            "min_stock_alert": forms.NumberInput(
+                attrs={"class": "form-control", "placeholder": "5"}
+            ),
+        }
+        labels = {
+            "name": "Nombre",
+            "category": "Categoría",
+            "price": "Precio Venta",
+            "cost": "Costo Compra",
+            "is_service": "¿Es Servicio?",
+            "stock_qty": "Stock Actual",
+            "min_stock_alert": "Alerta Stock Mínimo",
+        }
+        error_messages = {
+            "name": {
+                "unique": "Ya existe un producto con este nombre.",
+            }
+        }
 
 
 class CategoryForm(forms.ModelForm):

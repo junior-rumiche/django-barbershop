@@ -1,7 +1,17 @@
 from rest_framework import viewsets, permissions
 from django.contrib.auth.models import User, Group
-from core.apps.backoffice.models import Category
-from core.api.serializers import UserSerializer, GroupSerializer, CategorySerializer
+from core.apps.backoffice.models import Category, Product
+from core.api.serializers import UserSerializer, GroupSerializer, CategorySerializer, ProductSerializer
+
+
+class ProductViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows products to be viewed or edited.
+    """
+    queryset = Product.objects.all().order_by('name')
+    serializer_class = ProductSerializer
+    permission_classes = [permissions.DjangoModelPermissions]
+
 
 class CategoryViewSet(viewsets.ModelViewSet):
     """

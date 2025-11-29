@@ -16,6 +16,12 @@ from core.apps.backoffice.views.categories import (
     CategoryCreateView,
     CategoryUpdateView,
 )
+from core.apps.backoffice.views.products import (
+    ProductListView,
+    ProductCreateView,
+    ProductUpdateView,
+    ProductDeleteView,
+)
 
 
 urlpatterns = [
@@ -37,4 +43,16 @@ urlpatterns = [
     path("categories/", CategoryListView.as_view(), name="category_list"),
     path("categories/add/", CategoryCreateView.as_view(), name="category_add"),
     path("categories/<int:pk>/edit/", CategoryUpdateView.as_view(), name="category_edit"),
+
+    # Products URLs (is_service=False)
+    path("products/", ProductListView.as_view(), {"is_service": False}, name="product_list"),
+    path("products/add/", ProductCreateView.as_view(), {"is_service": False}, name="product_add"),
+    path("products/<int:pk>/edit/", ProductUpdateView.as_view(), {"is_service": False}, name="product_edit"),
+    path("products/<int:pk>/delete/", ProductDeleteView.as_view(), {"is_service": False}, name="product_delete"),
+
+    # Services URLs (is_service=True)
+    path("services/", ProductListView.as_view(), {"is_service": True}, name="service_list"),
+    path("services/add/", ProductCreateView.as_view(), {"is_service": True}, name="service_add"),
+    path("services/<int:pk>/edit/", ProductUpdateView.as_view(), {"is_service": True}, name="service_edit"),
+    path("services/<int:pk>/delete/", ProductDeleteView.as_view(), {"is_service": True}, name="service_delete"),
 ]
