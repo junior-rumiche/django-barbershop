@@ -11,6 +11,11 @@ from core.apps.backoffice.views.groups import (
     GroupCreateView,
     GroupUpdateView,
 )
+from core.apps.backoffice.views.categories import (
+    CategoryListView,
+    CategoryCreateView,
+    CategoryUpdateView,
+)
 
 
 urlpatterns = [
@@ -27,4 +32,9 @@ urlpatterns = [
     path("groups/", GroupListView.as_view(), name="group_list"),
     path("groups/add/", GroupCreateView.as_view(), name="group_add"),
     path("groups/<int:pk>/edit/", GroupUpdateView.as_view(), name="group_edit"),
+
+    # Categories URLs
+    path("categories/", CategoryListView.as_view(), name="category_list"),
+    path("categories/add/", CategoryCreateView.as_view(), name="category_add"),
+    path("categories/<int:pk>/edit/", CategoryUpdateView.as_view(), name="category_edit"),
 ]

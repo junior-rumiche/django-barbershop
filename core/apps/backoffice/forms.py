@@ -1,6 +1,36 @@
 from django import forms
 from django.contrib.auth.models import User, Group, Permission
 from django.apps import apps
+from core.apps.backoffice.models import Category
+
+
+class CategoryForm(forms.ModelForm):
+    class Meta:
+        model = Category
+        fields = ["name", "description", "status"]
+        widgets = {
+            "name": forms.TextInput(
+                attrs={"class": "form-control", "placeholder": "Nombre de la categoría"}
+            ),
+            "description": forms.Textarea(
+                attrs={
+                    "class": "form-control",
+                    "rows": 3,
+                    "placeholder": "Descripción detallada",
+                }
+            ),
+            "status": forms.CheckboxInput(attrs={"class": "form-check-input", "role": "switch"}),
+        }
+        labels = {
+            "name": "Nombre",
+            "description": "Descripción",
+            "status": "Activo",
+        }
+        error_messages = {
+            "name": {
+                "unique": "Ya existe una categoría con este nombre.",
+            }
+        }
 
 
 class UserForm(forms.ModelForm):

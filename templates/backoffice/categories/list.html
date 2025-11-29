@@ -1,0 +1,181 @@
+{% extends 'base/backoffice/base.html' %}
+{% load static %}
+
+{% block styles %}
+<link rel="stylesheet" href="{% static 'backoffice/extensions/sweetalert2/sweetalert2.min.css' %}">
+{% endblock %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="page-heading">
+   <div class="page-title">
+      <div class="row">
+         <div class="col-12 col-md-6 order-md-1 order-last">
+            <h3>{{ page_title }}</h3>
+            <p class="text-subtitle text-muted">Administra las categorías de productos.</p>
+         </div>
+         <div class="col-12 col-md-6 order-md-2 order-first">
+            <nav aria-label="breadcrumb" class="breadcrumb-header float-start float-lg-end">
+               <ol class="breadcrumb">
+                  <li class="breadcrumb-item"><a href="{% url 'backoffice:dashboard' %}">Dashboard</a></li>
+                  <li class="breadcrumb-item active" aria-current="page">{{ page_title }}</li>
+               </ol>
+            </nav>
+         </div>
+      </div>
+   </div>
+
+   <section class="section">
+      <div class="card">
+         <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+               <h4 class="card-title">Filtros</h4>
+               {% if perms.backoffice.add_category %}
+               <a href="{% url 'backoffice:category_add' %}" class="btn btn-primary">
+                  <i class="bi bi-plus-lg"></i> Nuevo
+               </a>
+               {% endif %}
+            </div>
+            <form method="get" class="row g-3">
+               <div class="col-md-5">
+                  <label for="{{ filter.form.name.id_for_label }}" class="form-label">
+                     {{ filter.form.name.label }}
+                  </label>
+                  {{ filter.form.name }}
+               </div>
+               <div class="col-md-5">
+                  <label for="{{ filter.form.status.id_for_label }}" class="form-label">
+                     {{ filter.form.status.label }}
+                  </label>
+                  {{ filter.form.status }}
+               </div>
+               <div class="col-md-2 d-flex align-items-end">
+                  <button type="submit" class="btn btn-primary w-100">
+                     <i class="bi bi-funnel"></i> Filtrar
+                  </button>
+               </div>
+            </form>
+         </div>
+         <div class="card-body">
+            <div class="table-responsive">
+               <table class="table table-striped">
+                  <thead>
+                     <tr>
+                        <th>No.</th>
+                        <th>Nombre</th>
+                        <th>Descripción</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                     </tr>
+                  </thead>
+                  <tbody>
+                     {% for category in categories %}
+                     <tr>
+                        <td>
+                           {% if page_obj %}
+                           {{ page_obj.start_index|add:forloop.counter0 }}
+                           {% else %}
+                           {{ forloop.counter }}
+                           {% endif %}
+                        </td>
+                        <td>{{ category.name }}</td>
+                        <td>{{ category.description|default:"-" }}</td>
+                        <td>
+                           {% if category.status %}
+                           <span class="badge bg-success">Activo</span>
+                           {% else %}
+                           <span class="badge bg-danger">Inactivo</span>
+                           {% endif %}
+                        </td>
+                        <td>
+                           <div class="d-flex gap-2">
+                              {% if perms.backoffice.change_category %}
+                              <a href="{% url 'backoffice:category_edit' category.pk %}" class="btn btn-sm btn-primary"
+                                 data-bs-toggle="tooltip" data-bs-placement="top" title="Editar">
+                                 <i class="bi bi-pencil"></i>
+                              </a>
+                              {% endif %}
+                              {% if perms.backoffice.delete_category %}
+                              <button type="button" class="btn btn-sm btn-danger"
+                                 onclick="delete_category({{ category.pk }}, '{{ category.name|escapejs }}')"
+                                 data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                                 <i class="bi bi-trash"></i>
+                              </button>
+                              {% endif %}
+                              {% if not perms.backoffice.change_category and not perms.backoffice.delete_category %}
+                              <span class="text-muted">Sin permisos</span>
+                              {% endif %}
+                           </div>
+                        </td>
+                     </tr>
+                     {% empty %}
+                     <tr>
+                        <td colspan="5" class="text-center">No hay categorías registradas.</td>
+                     </tr>
+                     {% endfor %}
+                  </tbody>
+               </table>
+            </div>
+
+            <!-- Pagination -->
+            {% include 'backoffice/includes/pagination.html' %}
+         </div>
+      </div>
+   </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'backoffice/extensions/sweetalert2/sweetalert2.min.js' %}"></script>
+<script>
+   /**
+    * Deletes a category asynchronously after user confirmation via SweetAlert2.
+    * @param {number} id - The ID of the category to delete.
+    * @param {string} name - The name of the category to be deleted (for display).
+    * @returns {Promise<void>}
+    */
+   async function delete_category(id, name) {
+      const result = await Swal.fire({
+         title: '¿Estás seguro?',
+         text: `Eliminarás la categoría "${name}". Esta acción no se puede deshacer.`,
+         icon: 'warning',
+         showCancelButton: true,
+         confirmButtonColor: '#dc3545',
+         cancelButtonColor: '#6c757d',
+         confirmButtonText: 'Sí, eliminar',
+         cancelButtonText: 'Cancelar'
+      });
+
+      if (result.isConfirmed) {
+         try {
+            const csrf_token = get_cookie('csrftoken');
+            const response = await fetch(`/api/categories/${id}/`, {
+               method: 'DELETE',
+               headers: {
+                  'X-CSRFToken': csrf_token,
+                  'Content-Type': 'application/json'
+               },
+            });
+
+            if (response.ok) {
+               await Swal.fire(
+                  '¡Eliminado!',
+                  'La categoría ha sido eliminada.',
+                  'success'
+               );
+               location.reload();
+               return;
+            }
+            throw new Error('Hubo un problema al eliminar la categoría.');
+         } catch (error) {
+            await Swal.fire(
+               'Error',
+               error.message,
+               'error'
+            );
+         }
+      }
+   }
+</script>
+{% endblock %}
