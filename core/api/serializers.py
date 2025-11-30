@@ -14,12 +14,18 @@ class OrderItemSerializer(serializers.ModelSerializer):
 
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True, read_only=True)
-    created_by_name = serializers.CharField(source="created_by.get_full_name", read_only=True)
+    created_by_name = serializers.SerializerMethodField()
 
     class Meta:
         model = Order
         fields = "__all__"
         read_only_fields = ["total_amount", "created_at", "paid_at", "created_by", "collected_by"]
+
+    def get_created_by_name(self, obj):
+        if obj.created_by:
+            full_name = obj.created_by.get_full_name()
+            return full_name if full_name else obj.created_by.username
+        return "N/A"
 
 
 class ProductSerializer(serializers.ModelSerializer):

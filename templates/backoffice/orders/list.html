@@ -110,6 +110,14 @@
                         </td>
                         <td>
                            <div class="d-flex gap-2">
+                              {% if perms.backoffice.view_order %}
+                              <a href="#" class="btn btn-sm btn-info"
+                                 data-bs-toggle="modal" data-bs-target="#orderDetailModal"
+                                 data-order-id="{{ order.id }}"
+                                 data-bs-placement="top" title="Ver Detalle">
+                                 <i class="bi bi-eye"></i>
+                              </a>
+                              {% endif %}
                               {% if perms.backoffice.change_order %}
                               <a href="{% url 'backoffice:order_edit' order.pk %}" class="btn btn-sm btn-primary"
                                  data-bs-toggle="tooltip" data-bs-placement="top" title="Editar">
@@ -123,7 +131,7 @@
                                  <i class="bi bi-trash"></i>
                               </button>
                               {% endif %}
-                              {% if not perms.backoffice.change_order and not perms.backoffice.delete_order %}
+                              {% if not perms.backoffice.change_order and not perms.backoffice.delete_order and not perms.backoffice.view_order %}
                               <span class="text-muted">Sin permisos</span>
                               {% endif %}
                            </div>
@@ -131,7 +139,7 @@
                      </tr>
                      {% empty %}
                      <tr>
-                        <td colspan="6" class="text-center">No hay órdenes registradas.</td>
+                        <td colspan="7" class="text-center">No hay órdenes registradas.</td>
                      </tr>
                      {% endfor %}
                   </tbody>
@@ -144,11 +152,133 @@
       </div>
    </section>
 </div>
+
+<!-- Order Detail Modal -->
+<div class="modal fade" id="orderDetailModal" tabindex="-1" aria-labelledby="orderDetailModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="orderDetailModalLabel">Detalle de la Orden</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <!-- Content will be loaded here dynamically -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
 <script src="{% static 'backoffice/extensions/sweetalert2/sweetalert2.min.js' %}"></script>
 <script>
+   /**
+    * @fileoverview Manages interactions on the order list page.
+    * This script handles two main functionalities:
+    * 1. Fetching and displaying order details in a modal.
+    * 2. Deleting an order with a confirmation dialog.
+    */
+
+   document.addEventListener('DOMContentLoaded', function () {
+      const order_detail_modal = document.getElementById('orderDetailModal');
+
+      if (order_detail_modal) {
+         order_detail_modal.addEventListener('show.bs.modal', async function (event) {
+            const trigger_button = event.relatedTarget;
+            const order_id = trigger_button.getAttribute('data-order-id');
+            const modal_body = order_detail_modal.querySelector('.modal-body');
+            const modal_title = order_detail_modal.querySelector('.modal-title');
+
+            // 1. Set loading state while fetching data.
+            modal_title.textContent = `Detalle de la Orden #${order_id}`;
+            modal_body.innerHTML = `
+               <div class="d-flex justify-content-center my-5">
+                  <div class="spinner-border text-primary" role="status">
+                     <span class="visually-hidden">Cargando...</span>
+                  </div>
+               </div>`;
+
+            try {
+               // 2. Fetch order data from the API.
+               const response = await fetch(`/api/orders/${order_id}/?format=json`);
+               if (!response.ok) {
+                  throw new Error(`HTTP error! status: ${response.status}`);
+               }
+               const order = await response.json();
+
+               // 3. Build and inject the HTML to populate the modal.
+               const status_badges = {
+                  'PAID': '<span class="badge bg-success">Pagado</span>',
+                  'PENDING': '<span class="badge bg-warning text-dark">Pendiente</span>',
+                  'CANCELLED': '<span class="badge bg-danger">Anulado</span>'
+               };
+
+               let items_html = '';
+               order.items.forEach(item => {
+                  items_html += `
+                     <tr>
+                        <td>${item.product_name}</td>
+                        <td>${item.quantity}</td>
+                        <td>S/ ${parseFloat(item.unit_price).toFixed(2)}</td>
+                        <td class="text-end">S/ ${parseFloat(item.subtotal).toFixed(2)}</td>
+                     </tr>
+                  `;
+               });
+
+               modal_body.innerHTML = `
+                  <div class="row mb-4">
+                     <div class="col-md-6">
+                        <p><strong>Cliente:</strong> ${order.client_name}</p>
+                        <p><strong>Registrado por:</strong> ${order.created_by_name}</p>
+                     </div>
+                     <div class="col-md-6 text-md-end">
+                        <p><strong>Fecha:</strong> ${new Date(order.created_at).toLocaleString()}</p>
+                        <p><strong>Estado:</strong> ${status_badges[order.status] || order.status}</p>
+                     </div>
+                  </div>
+
+                  <h5>Items de la Orden</h5>
+                  <div class="table-responsive">
+                     <table class="table table-sm table-striped">
+                        <thead class="">
+                           <tr>
+                              <th>Producto</th>
+                              <th>Cantidad</th>
+                              <th>P. Unitario</th>
+                              <th class="text-end">Subtotal</th>
+                           </tr>
+                        </thead>
+                        <tbody>
+                           ${items_html}
+                        </tbody>
+                        <tfoot>
+                           <tr>
+                              <th colspan="3" class="text-end">Total General:</th>
+                              <th class="text-end fs-5">S/ ${parseFloat(order.total_amount).toFixed(2)}</th>
+                           </tr>
+                        </tfoot>
+                     </table>
+                  </div>
+               `;
+
+            } catch (error) {
+               // 4. Handle any errors during the fetch operation.
+               console.error('Error fetching order details:', error);
+               modal_body.innerHTML = '<div class="alert alert-danger">No se pudieron cargar los detalles de la orden. Por favor, intente de nuevo.</div>';
+            }
+         });
+      }
+   });
+
+
+   /**
+    * Prompts the user for confirmation and deletes an order if confirmed.
+    * @param {number} id - The ID of the order to delete.
+    * @param {string} name - The name or identifier of the order for the confirmation message.
+    */
    async function delete_order(id, name) {
       const result = await Swal.fire({
          title: '¿Estás seguro?',
@@ -179,9 +309,9 @@
                   'success'
                );
                location.reload();
-               return;
+            } else {
+               throw new Error('Hubo un problema al eliminar la orden.');
             }
-            throw new Error('Hubo un problema al eliminar la orden.');
          } catch (error) {
             await Swal.fire(
                'Error',

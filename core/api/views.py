@@ -1,4 +1,4 @@
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets, permissions, filters
 from django.contrib.auth.models import User, Group
 from core.apps.backoffice.models import Category, Product, Order
 from core.api.serializers import (
@@ -26,6 +26,8 @@ class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all().order_by("name")
     serializer_class = ProductSerializer
     permission_classes = [permissions.DjangoModelPermissions]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ["name"]
 
 
 class CategoryViewSet(viewsets.ModelViewSet):

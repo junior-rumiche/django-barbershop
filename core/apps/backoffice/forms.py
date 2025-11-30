@@ -19,6 +19,14 @@ class OrderForm(forms.ModelForm):
             "status": "Estado",
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name in self.errors:
+            if field_name in self.fields:
+                current_class = self.fields[field_name].widget.attrs.get('class', '')
+                if 'is-invalid' not in current_class:
+                    self.fields[field_name].widget.attrs['class'] = f'{current_class} is-invalid'.strip()
+
 
 class OrderItemForm(forms.ModelForm):
     class Meta:
@@ -33,6 +41,27 @@ class OrderItemForm(forms.ModelForm):
                 attrs={"class": "form-control price-input", "readonly": "readonly"}
             ),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name in self.errors:
+            if field_name in self.fields:
+                current_class = self.fields[field_name].widget.attrs.get('class', '')
+                if 'is-invalid' not in current_class:
+                    self.fields[field_name].widget.attrs['class'] = f'{current_class} is-invalid'.strip()
+
+    def clean(self):
+        cleaned_data = super().clean()
+        product = cleaned_data.get("product")
+        quantity = cleaned_data.get("quantity")
+
+        if product and quantity:
+            if not product.is_service and product.stock_qty < quantity:
+                self.add_error(
+                    'quantity', 
+                    f"Stock insuficiente. Disponible: {product.stock_qty}."
+                )
+        return cleaned_data
 
 
 class ProductForm(forms.ModelForm):
