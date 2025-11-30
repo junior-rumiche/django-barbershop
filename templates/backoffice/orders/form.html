@@ -3,172 +3,288 @@
 
 {% block title %}{{ page_title }}{% endblock %}
 
+{% block styles %}
+<link rel="stylesheet" href="{% static 'backoffice/extensions/sweetalert2/sweetalert2.min.css' %}">
+<style>
+    .card-clean {
+        border: none;
+        box-shadow: 0 4px 24px 0 rgba(34, 41, 47, 0.05);
+        border-radius: 1rem;
+        transition: all 0.3s ease;
+    }
+    .card-clean:hover {
+        box-shadow: 0 4px 24px 0 rgba(34, 41, 47, 0.1);
+    }
+    
+    /* Sticky Summary Panel */
+    @media (min-width: 992px) {
+        .sticky-panel {
+            position: sticky;
+            top: 20px;
+            z-index: 10;
+        }
+    }
+
+    /* Table Styling */
+    .table-pos thead th {
+        background-color: #f8f9fa;
+        border-bottom: none;
+        color: #6c757d;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+        padding: 1rem 1.5rem;
+        white-space: nowrap;
+    }
+    .table-pos tbody td {
+        padding: 1rem 1.5rem;
+        vertical-align: middle;
+        border-bottom: 1px solid #f2f4f8;
+        white-space: nowrap;
+    }
+    .table-pos tbody tr:last-child td {
+        border-bottom: none;
+    }
+    .table-pos tbody tr:hover {
+        background-color: #fafbff;
+    }
+
+    /* Buttons */
+    .btn-icon {
+        width: 36px;
+        height: 36px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+    }
+
+    /* Total Price Display */
+    .total-display {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 800;
+        letter-spacing: -1px;
+        color: #25396f;
+    }
+
+    .product-select {
+        display: none;
+    }
+    .product-name-display {
+        cursor: pointer;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="page-heading">
-    <div class="page-title">
-        <div class="row">
-            <div class="col-12 col-md-6 order-md-1 order-last">
-                <h3>{{ page_title }}</h3>
-                <p class="text-subtitle text-muted">Gestión de ventas y servicios.</p>
-            </div>
-            <div class="col-12 col-md-6 order-md-2 order-first">
-                <nav aria-label="breadcrumb" class="breadcrumb-header float-start float-lg-end">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="{% url 'backoffice:dashboard' %}">Dashboard</a></li>
-                        <li class="breadcrumb-item"><a href="{% url 'backoffice:order_list' %}">Ordenes</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">{{ page_title }}</li>
-                    </ol>
-                </nav>
-            </div>
+<div class="page-heading pos-container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex flex-column gap-2">
+            <h3 class="mb-1 text-dark fw-bold">{{ page_title }}</h3>
+            <p class="text-muted mb-0 fs-6">Nueva transacción de venta</p>
         </div>
+        <nav aria-label="breadcrumb" class="d-none d-md-block">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="{% url 'backoffice:dashboard' %}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'backoffice:order_list' %}">Ordenes</a></li>
+                <li class="breadcrumb-item active">{{ page_title }}</li>
+            </ol>
+        </nav>
     </div>
 
-    <section id="basic-vertical-layouts">
-        <div class="row match-height">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-content">
-                        <div class="card-body">
-                            <form class="form form-vertical" method="post" id="order-form">
-                                {% csrf_token %}
-                                
-                                {% if form.non_field_errors %}
-                                <div class="alert alert-danger">{{ form.non_field_errors }}</div>
-                                {% endif %}
+    <form class="form" method="post" id="order-form">
+        {% csrf_token %}
+        
+        {% if form.non_field_errors %}
+        <div class="alert alert-danger alert-dismissible fade show mb-4 shadow-sm border-0">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> {{ form.non_field_errors }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endif %}
 
-                                <div class="form-body">
-                                    <!-- Encabezado de la Orden -->
-                                    <div class="row mb-4 p-3 border rounded bg-light">
-                                        <h5 class="card-title mb-3">Información General</h5>
-                                        <div class="col-12 col-md-4">
-                                            <div class="form-group">
-                                                <label class="fw-bold">Registrado por:</label>
-                                                <input type="text" class="form-control" value="{{ user.get_full_name|default:user.username }}" readonly disabled>
-                                            </div>
-                                        </div>
-                                        <div class="col-12 col-md-4">
-                                            <div class="form-group">
-                                                <label for="{{ form.client_name.id_for_label }}" class="fw-bold">{{ form.client_name.label }}</label>
-                                                {{ form.client_name }}
-                                                {% if form.client_name.errors %}<div class="text-danger small">{{ form.client_name.errors }}</div>{% endif %}
-                                            </div>
-                                        </div>
-                                        <div class="col-12 col-md-4">
-                                            <div class="form-group">
-                                                <label for="{{ form.status.id_for_label }}" class="fw-bold">{{ form.status.label }}</label>
-                                                {{ form.status }}
-                                                {% if form.status.errors %}<div class="text-danger small">{{ form.status.errors }}</div>{% endif %}
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Detalle de Items -->
-                                    <div class="row">
-                                        <div class="col-12">
-                                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                                <h5>Items de la Orden</h5>
-                                                <button type="button" class="btn btn-primary btn-sm" id="add-item-btn">
-                                                    <i class="bi bi-plus-lg"></i> Agregar Item
+        <div class="row g-4">
+            <!-- COLUMNA IZQUIERDA: CARRITO -->
+            <div class="col-12 col-lg-8">
+                <div class="card card-clean h-100">
+                    <div class="card-header bg-white border-bottom-0 pt-4 px-4 d-flex flex-column flex-md-row gap-2 justify-content-between align-items-md-center">
+                        <h5 class="card-title mb-2 mb-md-0 fw-bold">
+                            <span class="bg-primary bg-opacity-10 text-primary p-2 rounded me-2">
+                                <i class="bi bi-cart3"></i>
+                            </span>
+                            Items de la Orden
+                        </h5>
+                        <button type="button" class="btn btn-primary px-3" id="add-item-btn">
+                            <i class="bi bi-plus-lg me-1"></i> Agregar Item
+                        </button>
+                    </div>
+                    <div class="card-body p-0">
+                        {{ items.management_form }}
+                        
+                        <div class="table-responsive">
+                            <table class="table table-pos mb-0" id="items-table">
+                                <thead>
+                                    <tr>
+                                        <th class="ps-4" style="min-width: 250px;">Producto / Servicio</th>
+                                        <th style="min-width: 200px;">Precio Unit.</th>
+                                        <th style="min-width: 200px;">Cantidad</th>
+                                        <th style="min-width: 200px;" class="text-end">Subtotal</th>
+                                        <th style="width: 50px;"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="items-container">
+                                    {% for item_form in items %}
+                                    <tr class="item-row">
+                                        {{ item_form.id }}
+                                        <td>
+                                            <div class="input-group">
+                                                {{ item_form.product }}
+                                                <button class="btn btn-primary open-product-modal" type="button" title="Buscar en catálogo">
+                                                    <i class="bi bi-search"></i>
                                                 </button>
                                             </div>
-                                            
-                                            {{ items.management_form }}
-                                            
-                                            <div class="table-responsive">
-                                                <table class="table table-hover" id="items-table">
-                                                    <thead>
-                                                        <tr>
-                                                            <th style="width: 40%;">Producto / Servicio</th>
-                                                            <th style="width: 15%;">Precio Unit.</th>
-                                                            <th style="width: 15%;">Cantidad</th>
-                                                            <th style="width: 15%;">Subtotal</th>
-                                                            <th style="width: 10%;">Acción</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody id="items-container">
-                                                        {% for item_form in items %}
-                                                        <tr class="item-row">
-                                                            {{ item_form.id }}
-                                                            <td>
-                                                                <div class="input-group">
-                                                                    {{ item_form.product }}
-                                                                    <button class="btn btn-outline-secondary open-product-modal" type="button">
-                                                                        <i class="bi bi-search"></i>
-                                                                    </button>
-                                                                </div>
-                                                                {% if item_form.product.errors %}<div class="text-danger small">{{ item_form.product.errors }}</div>{% endif %}
-                                                            </td>
-                                                            <td>
-                                                                {{ item_form.unit_price }}
-                                                                {% if item_form.unit_price.errors %}<div class="text-danger small">{{ item_form.unit_price.errors }}</div>{% endif %}
-                                                            </td>
-                                                            <td>
-                                                                {{ item_form.quantity }}
-                                                                {% if item_form.quantity.errors %}<div class="text-danger small">{{ item_form.quantity.errors }}</div>{% endif %}
-                                                            </td>
-                                                            <td>
-                                                                <input type="text" class="form-control row-subtotal" readonly value="0.00">
-                                                            </td>
-                                                            <td>
-                                                                {% if items.can_delete %}
-                                                                    <div class="d-none">{{ item_form.DELETE }}</div>
-                                                                    <button type="button" class="btn btn-danger btn-sm remove-row-btn">
-                                                                        <i class="bi bi-trash"></i>
-                                                                    </button>
-                                                                {% endif %}
-                                                            </td>
-                                                        </tr>
-                                                        {% endfor %}
-                                                    </tbody>
-                                                    <tfoot>
-                                                        <tr>
-                                                            <td colspan="3" class="text-end fw-bold fs-5">Total General:</td>
-                                                            <td colspan="2" class="fw-bold fs-5 text-primary">S/ <span id="grand-total">0.00</span></td>
-                                                        </tr>
-                                                    </tfoot>
-                                                </table>
+                                            {% if item_form.product.errors %}<div class="text-danger small mt-1 ps-1">{{ item_form.product.errors }}</div>{% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="form-group has-icon-left mb-0">
+                                                <div class="position-relative">
+                                                    {{ item_form.unit_price }}
+                                                    <div class="form-control-icon">
+                                                        <i class="bi bi-currency-dollar"></i>
+                                                    </div>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Botones de Acción -->
-                                    <div class="col-12 d-flex justify-content-end mt-4">
-                                        <a href="{% url 'backoffice:order_list' %}" class="btn btn-light-secondary me-1 mb-1">
-                                            <i class="bi bi-x-circle me-2"></i> Cancelar
-                                        </a>
-                                        <button type="button" id="save-btn" class="btn btn-success me-1 mb-1">
-                                            <i class="bi bi-check-circle me-2"></i> Guardar Orden
-                                        </button>
-                                    </div>
-                                </div>
-                            </form>
+                                            {% if item_form.unit_price.errors %}<div class="text-danger small mt-1 ps-1">{{ item_form.unit_price.errors }}</div>{% endif %}
+                                        </td>
+                                        <td>
+                                            {{ item_form.quantity }}
+                                            {% if item_form.quantity.errors %}<div class="text-danger small mt-1 ps-1">{{ item_form.quantity.errors }}</div>{% endif %}
+                                        </td>
+                                        <td class="text-end">
+                                            <div class="fw-bold text-dark row-subtotal-display fs-6">0.00</div>
+                                            <input type="hidden" class="row-subtotal" value="0.00">
+                                        </td>
+                                        <td class="text-center">
+                                            {% if items.can_delete %}
+                                                <div class="d-none">{{ item_form.DELETE }}</div>
+                                                <button type="button" class="btn btn-icon text-danger hover-bg-light-danger remove-row-btn" title="Eliminar">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
 
-    <!-- Template para filas vacías (oculto) -->
+            <!-- COLUMNA DERECHA: INFO Y TOTALES -->
+            <div class="col-12 col-lg-4">
+                <div class="sticky-panel">
+                    <!-- Tarjeta de Cliente -->
+                    <div class="card card-clean mb-4">
+                        <div class="card-body p-3 p-lg-4">
+                            <h6 class="text-uppercase text-muted fs-7 fw-bold mb-3 ls-1">Detalles de la Venta</h6>
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.client_name.id_for_label }}" class="form-label fw-bold text-dark">Cliente</label>
+                                <div class="form-group has-icon-left">
+                                    <div class="position-relative">
+                                        {{ form.client_name }}
+                                        <div class="form-control-icon">
+                                            <i class="bi bi-person"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% if form.client_name.errors %}<div class="text-danger small mt-1">{{ form.client_name.errors }}</div>{% endif %}
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="{{ form.status.id_for_label }}" class="form-label fw-bold text-dark">Estado</label>
+                                {{ form.status }}
+                                {% if form.status.errors %}<div class="text-danger small mt-1">{{ form.status.errors }}</div>{% endif %}
+                            </div>
+
+                            <div class="d-flex align-items-center bg-light p-3 rounded mt-4">
+                                <div class="avatar avatar-md bg-primary me-3">
+                                    <span class="avatar-content text-white fw-bold">{{ user.username|slice:":2"|upper }}</span>
+                                </div>
+                                <div class="overflow-hidden">
+                                    <p class="mb-0 text-muted small">Registrado por</p>
+                                    <h6 class="mb-0 text-truncate text-dark fw-bold">{{ user.get_full_name|default:user.username }}</h6>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tarjeta de Totales -->
+                    <div class="card card-clean">
+                        <div class="card-body p-3 p-lg-4">
+                            <h6 class="text-uppercase text-muted fs-7 fw-bold mb-4 ls-1">Resumen de la Orden</h6>
+                            
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="text-muted fs-6">Subtotal</span>
+                                <span id="summary-subtotal" class="fw-semibold fs-6">S/ 0.00</span>
+                            </div>
+                            
+                            <hr class="my-4">
+            
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h5 class="mb-0 fw-bold">Total</h5>
+                                <h4 class="mb-0 fw-bolder text-primary">S/ <span id="grand-total">0.00</span></h4>
+                            </div>
+            
+                            <div class="d-grid gap-2">
+                                <button type="button" id="save-btn" class="btn btn-primary w-100 fw-bold py-3 shadow-sm">
+                                    <i class="bi bi-check-lg me-2"></i> Confirmar Orden
+                                </button>
+                                <a href="{% url 'backoffice:order_list' %}" class="btn btn-light w-100 mt-2 py-3">
+                                    Cancelar
+                                </a>
+                            </div>
+                        </div>
+                    </div>                
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <!-- Template oculto -->
     <table class="d-none">
         <tbody id="empty-form-template">
-            <tr class="item-row">
+            <tr class="item-row align-middle">
                 {{ items.empty_form.id }}
                 <td>
                     <div class="input-group">
                         {{ items.empty_form.product }}
-                        <button class="btn btn-outline-secondary open-product-modal" type="button">
+                        <button class="btn btn-primary border open-product-modal" type="button">
                             <i class="bi bi-search"></i>
                         </button>
                     </div>
                 </td>
-                <td>{{ items.empty_form.unit_price }}</td>
-                <td>{{ items.empty_form.quantity }}</td>
-                <td><input type="text" class="form-control row-subtotal" readonly value="0.00"></td>
                 <td>
+                    <div class="form-group has-icon-left mb-0">
+                        <div class="position-relative">
+                            {{ items.empty_form.unit_price }}
+                            <div class="form-control-icon">
+                                <i class="bi bi-currency-dollar"></i>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+                <td>{{ items.empty_form.quantity }}</td>
+                <td class="text-end">
+                    <div class="fw-bold text-dark row-subtotal-display fs-6">0.00</div>
+                    <input type="hidden" class="row-subtotal" value="0.00">
+                </td>
+                <td class="text-center">
                     {% if items.can_delete %}
                         <div class="d-none">{{ items.empty_form.DELETE }}</div>
-                        <button type="button" class="btn btn-danger btn-sm remove-row-btn">
+                        <button type="button" class="btn btn-icon text-danger hover-bg-light-danger remove-row-btn">
                             <i class="bi bi-trash"></i>
                         </button>
                     {% endif %}
@@ -177,39 +293,46 @@
         </tbody>
     </table>
 
-    <!-- Modal de Selección de Productos -->
+    <!-- Modal Estilizado -->
     <div class="modal fade" id="productModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-            <div class="modal-content">
-                <div class="modal-header bg-primary">
-                    <h5 class="modal-title text-white">Seleccionar Producto / Servicio</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="input-group mb-3">
-                        <span class="input-group-text"><i class="bi bi-search"></i></span>
-                        <input type="text" class="form-control" id="product-search-input" placeholder="Buscar por nombre...">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content bg-white border-0 shadow-lg rounded-4">
+                <div class="modal-header border-bottom-0 pb-0 pt-4 px-4">
+                    <div>
+                        <h5 class="modal-title fw-bold text-dark">Catálogo de Productos</h5>
+                        <p class="text-muted small mb-0">Seleccione un item para agregarlo a la orden.</p>
                     </div>
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
+                    <button type="button" class="btn-close bg-light" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-3 p-lg-4">
+                    <div class="form-group has-icon-left mb-4">
+                        <div class="position-relative">
+                            <input type="text" class="form-control form-control-lg ps-5" id="product-search-input" placeholder="Buscar...">
+                            <div class="form-control-icon">
+                                <i class="bi bi-search"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="table-responsive rounded-3 border" style="max-height: 350px;">
+                        <table class="table table-hover mb-0 align-middle">
+                            <thead class="sticky-top border-bottom bg-body">
                                 <tr>
-                                    <th>Nombre</th>
-                                    <th>Categoría</th>
-                                    <th>Precio</th>
-                                    <th>Stock</th>
-                                    <th>Acción</th>
+                                    <th class="ps-4 py-3 small text-uppercase">Nombre</th>
+                                    <th class="py-3 small text-uppercase">Categoría</th>
+                                    <th class="py-3 small text-uppercase">Precio</th>
+                                    <th class="py-3 small text-uppercase">Stock</th>
+                                    <th class="pe-4 py-3 text-end small text-uppercase">Acción</th>
                                 </tr>
                             </thead>
                             <tbody id="modal-products-body">
-                                <!-- Llenado por JS -->
+                                <!-- Contenido dinámico -->
                             </tbody>
                         </table>
                     </div>
-                    <div class="text-center" id="modal-loading" style="display:none;">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Cargando...</span>
-                        </div>
+                    
+                    <div class="text-center py-5" id="modal-loading" style="display:none;">
+                        <div class="spinner-border text-primary" role="status"></div>
                     </div>
                 </div>
             </div>
@@ -221,99 +344,106 @@
 {% block scripts %}
 <script src="{% static 'backoffice/extensions/sweetalert2/sweetalert2.min.js' %}"></script>
 <script>
+/**
+ * @fileoverview Manages the order creation and editing form, including
+ * adding/removing items, calculating totals, and selecting products from a modal.
+ */
 document.addEventListener('DOMContentLoaded', function() {
-    // --- Variables y Selectores ---
-    const addItemBtn = document.getElementById('add-item-btn');
-    const itemsContainer = document.getElementById('items-container');
-    const emptyFormTemplate = document.getElementById('empty-form-template').innerHTML;
-    const totalFormsInput = document.getElementById('id_items-TOTAL_FORMS');
-    const productModal = new bootstrap.Modal(document.getElementById('productModal'));
-    let activeRow = null; // Para saber qué fila abrió el modal
+    // --- DOM Element Selectors ---
+    const add_item_btn = document.getElementById('add-item-btn');
+    const items_container = document.getElementById('items-container');
+    const empty_form_template = document.getElementById('empty-form-template').innerHTML;
+    const total_forms_input = document.getElementById('id_items-TOTAL_FORMS');
+    const product_modal_el = document.getElementById('productModal');
+    const search_input = document.getElementById('product-search-input');
+    const modal_body = document.getElementById('modal-products-body');
+    const modal_loading = document.getElementById('modal-loading');
+    const grand_total_el = document.getElementById('grand-total');
+    const summary_subtotal_el = document.getElementById('summary-subtotal');
+    const order_form = document.getElementById('order-form');
+    const save_btn = document.getElementById('save-btn');
 
-    // --- Funciones de Cálculo ---
-    function calculateTotals() {
-        let grandTotal = 0;
+    // --- State ---
+    const product_modal = new bootstrap.Modal(product_modal_el);
+    let active_row = null;
+    let search_timeout = null;
+
+    /**
+     * Replaces product dropdowns with read-only inputs and ensures price/quantity
+     * inputs have the correct classes for calculation.
+     * @param {HTMLElement} row The item row element to process.
+     */
+    function setup_row_inputs(row) {
+        // Setup product display input
+        const product_select = row.querySelector('select[name$="-product"]');
+        if (product_select && !row.querySelector('.product-name-display')) {
+            const input_group = product_select.parentElement;
+            product_select.classList.add('product-select');
+
+            const display_input = document.createElement('input');
+            display_input.type = 'text';
+            display_input.readOnly = true;
+            display_input.className = 'form-control product-name-display';
+            display_input.placeholder = 'Haga clic en la lupa para buscar...';
+            
+            if (product_select.value) {
+                const selected_text = product_select.options[product_select.selectedIndex].text;
+                if (!selected_text.startsWith('---')) {
+                    display_input.value = selected_text;
+                }
+            }
+            
+            display_input.addEventListener('click', () => {
+                input_group.querySelector('.open-product-modal').click();
+            });
+
+            input_group.prepend(display_input);
+        }
+
+        // Ensure price and quantity inputs have the correct classes
+        const price_input = row.querySelector('input[name$="-unit_price"]');
+        if (price_input) {
+            price_input.classList.add('price-input');
+        }
+        
+        const quantity_input = row.querySelector('input[name$="-quantity"]');
+        if (quantity_input) {
+            quantity_input.classList.add('quantity-input');
+        }
+    }
+
+    /**
+     * Calculates the subtotal for each item and the grand total for the entire order.
+     * Updates the UI with the new totals.
+     */
+    function calculate_totals() {
+        let grand_total = 0;
         document.querySelectorAll('.item-row').forEach(row => {
-            // Si la fila está marcada para borrar (campo hidden DELETE), ignorarla
-            const deleteInput = row.querySelector('input[name$="-DELETE"]');
-            if (deleteInput && deleteInput.checked) {
-                row.style.display = 'none'; // Ocultar visualmente si se reactiva lógica de borrado Django
+            const delete_input = row.querySelector('input[name$="-DELETE"]');
+            if ((delete_input && delete_input.checked) || row.style.display === 'none') {
                 return;
             }
-            if (row.style.display === 'none') return;
 
             const quantity = parseFloat(row.querySelector('.quantity-input').value) || 0;
             const price = parseFloat(row.querySelector('.price-input').value) || 0;
             const subtotal = quantity * price;
             
-            row.querySelector('.row-subtotal').value = subtotal.toFixed(2);
-            grandTotal += subtotal;
+            row.querySelector('.row-subtotal-display').textContent = subtotal.toFixed(2);
+            grand_total += subtotal;
         });
-        document.getElementById('grand-total').innerText = grandTotal.toFixed(2);
+        
+        const total_str = grand_total.toFixed(2);
+        grand_total_el.innerText = total_str;
+        summary_subtotal_el.innerText = 'S/ ' + total_str;
     }
 
-    // --- Eventos Delegados (Tabla Principal) ---
-    itemsContainer.addEventListener('input', function(e) {
-        if (e.target.classList.contains('quantity-input') || e.target.classList.contains('price-input')) {
-            calculateTotals();
-        }
-    });
-
-    itemsContainer.addEventListener('click', function(e) {
-        // Eliminar Fila
-        if (e.target.closest('.remove-row-btn')) {
-            const row = e.target.closest('.item-row');
-            const deleteInput = row.querySelector('input[name$="-DELETE"]');
-            if (deleteInput) {
-                deleteInput.checked = true;
-                row.style.display = 'none';
-            } else {
-                // Si es una fila nueva dinámica que aún no se ha guardado, podemos removerla del DOM
-                // Pero para mantener el índice sync con Django, mejor ocultar y dejar que POST lo ignore si está vacío
-                // O simplemente removerla si usamos lógica de reemplazo de índices (complejo).
-                // Estrategia simple: Marcar DELETE si existe, sino (fila extra) remover.
-                row.remove();
-                // Update TOTAL_FORMS count? Django espera índices consecutivos. 
-                // Lo más seguro en Django formsets JS simples es ocultar y marcar DELETE.
-            }
-            calculateTotals();
-        }
-
-        // Abrir Modal
-        if (e.target.closest('.open-product-modal')) {
-            activeRow = e.target.closest('.item-row');
-            loadProducts(); // Cargar productos iniciales
-            productModal.show();
-        }
-    });
-
-    // --- Agregar Nueva Fila ---
-    addItemBtn.addEventListener('click', function() {
-        const formIdx = totalFormsInput.value;
-        const newRowHtml = emptyFormTemplate.replace(/__prefix__/g, formIdx);
-        itemsContainer.insertAdjacentHTML('beforeend', newRowHtml);
-        totalFormsInput.value = parseInt(formIdx) + 1;
-        
-        // Inicializar selects o inputs si fuera necesario
-        calculateTotals();
-    });
-
-    // --- Lógica del Modal ---
-    const searchInput = document.getElementById('product-search-input');
-    const modalBody = document.getElementById('modal-products-body');
-    const modalLoading = document.getElementById('modal-loading');
-    let searchTimeout = null;
-
-    searchInput.addEventListener('input', function() {
-        clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(() => {
-            loadProducts(this.value);
-        }, 300);
-    });
-
-    async function loadProducts(query = '') {
-        modalBody.innerHTML = '';
-        modalLoading.style.display = 'block';
+    /**
+     * Fetches products from the API and populates the product selection modal.
+     * @param {string} [query=''] - The search query to filter products.
+     */
+    async function load_products(query = '') {
+        modal_body.innerHTML = '';
+        modal_loading.style.display = 'block';
         
         try {
             let url = `/api/products/?format=json`;
@@ -322,79 +452,135 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             const response = await fetch(url);
-            const data = await response.json(); // Django Rest Framework paginates by default usually
-            const products = data.results ? data.results : data; // Handle pagination or list
+            const data = await response.json();
+            const products = data.results || data;
 
-            if (products.length === 0) {
-                modalBody.innerHTML = '<tr><td colspan="5" class="text-center">No se encontraron productos.</td></tr>';
+            modal_loading.style.display = 'none';
+
+            if (!products || products.length === 0) {
+                modal_body.innerHTML = '<tr><td colspan="5" class="text-center py-5 text-muted"><i class="bi bi-inbox fs-1 d-block mb-2 opacity-50"></i>No hay productos disponibles.</td></tr>';
                 return;
             }
 
             products.forEach(p => {
-                const isService = p.is_service;
-                const stockBadge = isService 
-                    ? '<span class="badge bg-info">Servicio</span>' 
-                    : (p.stock_qty > 0 ? `<span class="badge bg-success">${p.stock_qty}</span>` : '<span class="badge bg-danger">0</span>');
+                const is_service = p.is_service;
+                let stock_badge;
+                if (is_service) {
+                    stock_badge = '<span class="badge bg-warning rounded-pill">Servicio</span>';
+                } else {
+                    stock_badge = p.stock_qty > 0 
+                        ? `<span class="badge bg-success rounded-pill">${p.stock_qty} disp.</span>` 
+                        : '<span class="badge bg-danger rounded-pill">Agotado</span>';
+                }
                 
                 const tr = document.createElement('tr');
                 tr.style.cursor = 'pointer';
                 tr.innerHTML = `
-                    <td>${p.name}</td>
-                    <td>${p.category_name || '-'}</td>
-                    <td>S/ ${p.price}</td>
-                    <td>${stockBadge}</td>
-                    <td><button class="btn btn-sm btn-primary select-product-btn">Seleccionar</button></td>
+                    <td class="ps-4">
+                        <div class="text-dark">${p.name}</div>
+                    </td>
+                    <td>${p.category_name || 'Gral'}</td>
+                    <td class="text-primary">S/ ${p.price}</td>
+                    <td>${stock_badge}</td>
+                    <td class="pe-4 text-end">
+                        <button class="btn btn-sm btn-primary rounded-circle p-0 shadow-sm" style="width:32px;height:32px;"><i class="bi bi-plus-lg"></i></button>
+                    </td>
                 `;
-                
-                // Evento de selección
-                tr.addEventListener('click', () => selectProduct(p));
-                modalBody.appendChild(tr);
+                tr.onclick = () => select_product(p);
+                modal_body.appendChild(tr);
             });
 
         } catch (error) {
-            console.error(error);
-            modalBody.innerHTML = '<tr><td colspan="5" class="text-center text-danger">Error al cargar productos.</td></tr>';
-        } finally {
-            modalLoading.style.display = 'none';
+            console.error('Error loading products:', error);
+            modal_body.innerHTML = '<tr><td colspan="5" class="text-center text-danger py-4">Error al cargar datos.</td></tr>';
         }
     }
 
-    function selectProduct(product) {
-        if (!activeRow) return;
+    /**
+     * Populates the active order item row with the selected product's data.
+     * @param {object} product - The selected product object.
+     */
+    function select_product(product) {
+        if (!active_row) return;
 
-        // Llenar campos en la fila activa
-        const select = activeRow.querySelector('.product-select');
-        const priceInput = activeRow.querySelector('.price-input');
-        const quantityInput = activeRow.querySelector('.quantity-input');
-
-        // Establecer valor del Select (debe existir la opción, si no, la agregamos temporalmente)
-        // Como el select carga todos los productos al inicio (django form standard), debería funcionar.
-        // Si el producto es nuevo y no está en el select inicial, habría problemas, pero asumimos carga completa.
-        select.value = product.id; 
+        active_row.querySelector('.product-name-display').value = product.name;
         
-        // Si select.value falla (producto paginado no cargado en select inicial Django),
-        // deberíamos crear la opción. Django forms renderiza todos los FK por defecto.
-        if (select.value != product.id) {
-             const option = new Option(product.name, product.id);
-             select.add(option, undefined);
-             select.value = product.id;
+        const select = active_row.querySelector('.product-select');
+        if (!Array.from(select.options).some(opt => opt.value == product.id)) {
+             const option = new Option(product.name, product.id, true, true);
+             select.add(option);
         }
+        select.value = product.id;
 
-        priceInput.value = product.price;
-        quantityInput.value = 1;
+        active_row.querySelector('.price-input').value = product.price;
+        active_row.querySelector('.quantity-input').value = 1;
 
-        calculateTotals();
-        productModal.hide();
-        activeRow = null;
+        calculate_totals();
+        product_modal.hide();
+        active_row = null;
     }
-    
-    // --- Guardado ---
-    document.getElementById('save-btn').addEventListener('click', function() {
-        document.getElementById('order-form').submit();
+
+    /**
+     * Adds a new item row to the order form.
+     */
+    function add_new_item() {
+        const form_idx = parseInt(total_forms_input.value);
+        const new_row_html = empty_form_template.replace(/__prefix__/g, form_idx);
+        
+        const temp_div = document.createElement('tbody');
+        temp_div.innerHTML = new_row_html;
+        const new_row = temp_div.firstElementChild;
+
+        items_container.appendChild(new_row);
+        setup_row_inputs(new_row);
+
+        total_forms_input.value = form_idx + 1;
+        calculate_totals();
+    }
+
+    // --- Event Listeners ---
+    items_container.addEventListener('input', (e) => {
+        if (e.target.matches('.quantity-input, .price-input')) {
+            calculate_totals();
+        }
     });
 
-    // Calc inicial por si es Edición
-    calculateTotals();
+    items_container.addEventListener('click', (e) => {
+        const remove_btn = e.target.closest('.remove-row-btn');
+        if (remove_btn) {
+            const row = remove_btn.closest('.item-row');
+            const delete_input = row.querySelector('input[name$="-DELETE"]');
+            if (delete_input) {
+                delete_input.checked = true;
+                row.style.display = 'none';
+            } else {
+                row.remove();
+            }
+            calculate_totals();
+        }
+
+        const open_modal_btn = e.target.closest('.open-product-modal');
+        if (open_modal_btn) {
+            active_row = open_modal_btn.closest('.item-row');
+            load_products();
+            product_modal.show();
+        }
+    });
+
+    add_item_btn.addEventListener('click', add_new_item);
+
+    search_input.addEventListener('input', () => {
+        clearTimeout(search_timeout);
+        search_timeout = setTimeout(() => load_products(search_input.value), 300);
+    });
+
+    save_btn.addEventListener('click', () => {
+        order_form.submit();
+    });
+
+    // --- Initialization ---
+    document.querySelectorAll('.item-row').forEach(setup_row_inputs);
+    calculate_totals();
 });
 </script>
 {% endblock %}
