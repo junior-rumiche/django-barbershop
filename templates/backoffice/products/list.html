@@ -79,7 +79,7 @@
                   </thead>
                   <tbody>
                      {% for product in products %}
-                     <tr>
+                     <tr class="{% if not is_service %}{% if product.stock_qty == 0 %}bg-light-danger{% elif product.stock_qty <= product.min_stock_alert %}bg-light-warning{% endif %}{% endif %}">
                         <td>
                            {% if page_obj %}
                            {{ page_obj.start_index|add:forloop.counter0 }}

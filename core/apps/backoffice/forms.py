@@ -141,6 +141,14 @@ class CategoryForm(forms.ModelForm):
             }
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name in self.errors:
+            if field_name in self.fields:
+                current_class = self.fields[field_name].widget.attrs.get('class', '')
+                if 'is-invalid' not in current_class:
+                    self.fields[field_name].widget.attrs['class'] = f'{current_class} is-invalid'.strip()
+
 
 class UserForm(forms.ModelForm):
     password = forms.CharField(
