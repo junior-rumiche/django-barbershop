@@ -110,6 +110,13 @@
                         </td>
                         <td>
                            <div class="d-flex gap-2">
+                              {% if perms.backoffice.can_print_order %}
+                              <a href="{% url 'backoffice:order_print' order.pk %}" class="btn btn-sm btn-dark"
+                                 target="_blank"
+                                 data-bs-toggle="tooltip" data-bs-placement="top" title="Imprimir">
+                                 <i class="bi bi-printer"></i>
+                              </a>
+                              {% endif %}
                               {% if perms.backoffice.view_order %}
                               <a href="#" class="btn btn-sm btn-info"
                                  data-bs-toggle="modal" data-bs-target="#orderDetailModal"

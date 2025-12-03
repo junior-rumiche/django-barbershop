@@ -27,6 +27,7 @@ from core.apps.backoffice.views.orders import (
     OrderCreateView,
     OrderUpdateView,
     OrderDeleteView,
+    OrderPrintView,
 )
 
 
@@ -67,4 +68,5 @@ urlpatterns = [
     path("orders/add/", OrderCreateView.as_view(), name="order_add"),
     path("orders/<int:pk>/edit/", OrderUpdateView.as_view(), name="order_edit"),
     path("orders/<int:pk>/delete/", OrderDeleteView.as_view(), name="order_delete"),
+    path("orders/<int:pk>/print/", OrderPrintView.as_view(), name="order_print"),
 ]

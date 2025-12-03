@@ -96,6 +96,9 @@ class Order(models.Model):
     class Meta:
         verbose_name = "Venta"
         verbose_name_plural = "Ventas"
+        permissions = [
+            ("can_print_order", "Puede imprimir orden"),
+        ]
 
     def __str__(self):
         return f"Cliente: {self.client_name} - ${self.total_amount}"
