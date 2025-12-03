@@ -5,6 +5,7 @@ This module defines the data structures used in the backoffice.
 
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils import timezone
 
 
 class Category(models.Model):
@@ -98,6 +99,7 @@ class Order(models.Model):
         verbose_name_plural = "Ventas"
         permissions = [
             ("can_print_order", "Puede imprimir orden"),
+            ("can_mark_order_as_paid", "Puede marcar orden como pagada"),
         ]
 
     def __str__(self):
@@ -105,6 +107,15 @@ class Order(models.Model):
 
     def mark_as_paid(self, user_who_collected):
         """Función auxiliar para cerrar la venta limpiamente"""
+        if self.status == "PAID":
+            return
+
+        # Descontar stock
+        for item in self.items.all():
+            if not item.product.is_service:
+                item.product.stock_qty -= item.quantity
+                item.product.save()
+
         self.status = "PAID"
         self.collected_by = user_who_collected
         self.paid_at = timezone.now()

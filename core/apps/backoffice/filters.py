@@ -1,5 +1,6 @@
 import django_filters
 from django import forms
+from django.utils import timezone
 from django.contrib.auth.models import User, Group
 from core.apps.backoffice.models import Category, Product, Order
 
@@ -24,6 +25,21 @@ class OrderFilter(django_filters.FilterSet):
         label='Rango de Fechas',
         widget=django_filters.widgets.RangeWidget(attrs={'class': 'form-control', 'type': 'date'})
     )
+
+    def __init__(self, data=None, queryset=None, *, request=None, prefix=None):
+        if data is None:
+            data = {}
+            today = timezone.now().strftime('%Y-%m-%d')
+            data['created_at_after'] = today
+            data['created_at_before'] = today
+        else:
+            data = data.copy()
+            if 'created_at_after' not in data and 'created_at_before' not in data:
+                today = timezone.now().strftime('%Y-%m-%d')
+                data['created_at_after'] = today
+                data['created_at_before'] = today
+        
+        super().__init__(data, queryset, request=request, prefix=prefix)
 
     class Meta:
         model = Order

@@ -93,6 +93,13 @@ class OrderUpdateView(BasePageMixin, UpdateView):
     page_title = "Editar Orden"
     permission_required = "backoffice.change_order"
 
+    def dispatch(self, request, *args, **kwargs):
+        order = self.get_object()
+        if order.status == 'PAID':
+            messages.error(request, "No se puede editar una orden que ya ha sido pagada.")
+            return redirect(self.success_url)
+        return super().dispatch(request, *args, **kwargs)
+
     def get_context_data(self, **kwargs):
         data = super().get_context_data(**kwargs)
         if self.request.POST:

@@ -1,4 +1,6 @@
-from rest_framework import viewsets, permissions, filters
+from rest_framework import viewsets, permissions, filters, status
+from rest_framework.decorators import action
+from rest_framework.response import Response
 from django.contrib.auth.models import User, Group
 from core.apps.backoffice.models import Category, Product, Order
 from core.api.serializers import (
@@ -17,6 +19,25 @@ class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all().order_by("-created_at")
     serializer_class = OrderSerializer
     permission_classes = [permissions.DjangoModelPermissions]
+
+    @action(detail=True, methods=['post'], url_path='mark-as-paid')
+    def mark_as_paid(self, request, pk=None):
+        order = self.get_object()
+        if not request.user.has_perm('backoffice.can_mark_order_as_paid'):
+            return Response(
+                {'detail': 'No tienes permiso para realizar esta acción.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        if order.status == 'PAID':
+             return Response(
+                {'detail': 'La orden ya está pagada.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        order.mark_as_paid(request.user)
+        serializer = self.get_serializer(order)
+        return Response(serializer.data)
 
 
 class ProductViewSet(viewsets.ModelViewSet):

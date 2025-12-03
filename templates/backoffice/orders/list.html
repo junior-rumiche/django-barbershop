@@ -95,7 +95,7 @@
                            {{ forloop.counter }}
                            {% endif %}
                         </td>
-                        <td>{{ order.created_at|date:"d/m/Y H:i" }}</td>
+                        <td>{{ order.created_at|date:"d/m/Y h:i A" }}</td>
                         <td>{{ order.client_name }}</td>
                         <td>{{ order.created_by.get_full_name|default:order.created_by.username }}</td>
                         <td>S/ {{ order.total_amount }}</td>
@@ -110,6 +110,13 @@
                         </td>
                         <td>
                            <div class="d-flex gap-2">
+                              {% if perms.backoffice.can_mark_order_as_paid and order.status == 'PENDING' %}
+                              <button type="button" class="btn btn-sm btn-success"
+                                 onclick="mark_as_paid({{ order.pk }}, '{{ order.client_name|escapejs }}')"
+                                 data-bs-toggle="tooltip" data-bs-placement="top" title="Marcar como Pagado">
+                                 <i class="bi bi-currency-dollar"></i>
+                              </button>
+                              {% endif %}
                               {% if perms.backoffice.can_print_order %}
                               <a href="{% url 'backoffice:order_print' order.pk %}" class="btn btn-sm btn-dark"
                                  target="_blank"
@@ -125,7 +132,7 @@
                                  <i class="bi bi-eye"></i>
                               </a>
                               {% endif %}
-                              {% if perms.backoffice.change_order %}
+                              {% if perms.backoffice.change_order and order.status != 'PAID' %}
                               <a href="{% url 'backoffice:order_edit' order.pk %}" class="btn btn-sm btn-primary"
                                  data-bs-toggle="tooltip" data-bs-placement="top" title="Editar">
                                  <i class="bi bi-pencil"></i>
@@ -280,6 +287,55 @@
       }
    });
 
+
+   /**
+    * Prompts the user for confirmation and marks an order as paid.
+    * @param {number} id - The ID of the order.
+    * @param {string} client - The name of the client.
+    */
+   async function mark_as_paid(id, client) {
+      const result = await Swal.fire({
+         title: 'Confirmar Pago',
+         text: `¿Deseas marcar la orden de ${client} como PAGADA?`,
+         icon: 'question',
+         showCancelButton: true,
+         confirmButtonColor: '#198754',
+         cancelButtonColor: '#6c757d',
+         confirmButtonText: 'Sí, marcar como pagado',
+         cancelButtonText: 'Cancelar'
+      });
+
+      if (result.isConfirmed) {
+         try {
+            const csrf_token = get_cookie('csrftoken');
+            const response = await fetch(`/api/orders/${id}/mark-as-paid/`, {
+               method: 'POST',
+               headers: {
+                  'X-CSRFToken': csrf_token,
+                  'Content-Type': 'application/json'
+               },
+            });
+
+            if (response.ok) {
+               await Swal.fire(
+                  '¡Pagado!',
+                  'La orden ha sido marcada como pagada.',
+                  'success'
+               );
+               location.reload();
+            } else {
+               const data = await response.json();
+               throw new Error(data.detail || 'Hubo un problema al procesar el pago.');
+            }
+         } catch (error) {
+            await Swal.fire(
+               'Error',
+               error.message,
+               'error'
+            );
+         }
+      }
+   }
 
    /**
     * Prompts the user for confirmation and deletes an order if confirmed.
