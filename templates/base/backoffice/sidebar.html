@@ -31,6 +31,16 @@
                     </a>
                 </li>
 
+                <li class="sidebar-title text-muted">Entradas</li>
+
+                {% if perms.backoffice.view_supplyentry %}
+                <li class="sidebar-item {% if 'supply_' in request.resolver_match.url_name %}active{% endif %}">
+                    <a href="{% url 'backoffice:supply_list' %}" class='sidebar-link'>
+                        <i class="bi bi-box-arrow-in-down"></i>
+                        <span>Registro de Entradas</span>
+                    </a>
+                </li>
+                {% endif %}
 
                 {% if perms.backoffice.view_category or perms.backoffice.view_product %}
                 <li class="sidebar-title text-muted">Catalogo</li>

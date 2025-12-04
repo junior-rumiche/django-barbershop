@@ -2,14 +2,29 @@ from rest_framework import viewsets, permissions, filters, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.contrib.auth.models import User, Group
-from core.apps.backoffice.models import Category, Product, Order
+from core.apps.backoffice.models import Category, Product, Order, SupplyEntry
 from core.api.serializers import (
     UserSerializer,
     GroupSerializer,
     CategorySerializer,
     ProductSerializer,
     OrderSerializer,
+    SupplyEntrySerializer,
 )
+
+
+class SupplyEntryViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows supply entries to be viewed or edited.
+    """
+    queryset = SupplyEntry.objects.all().order_by("-date")
+    serializer_class = SupplyEntrySerializer
+    permission_classes = [permissions.DjangoModelPermissions]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ["product__name", "supplier"]
+
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user)
 
 
 class OrderViewSet(viewsets.ModelViewSet):

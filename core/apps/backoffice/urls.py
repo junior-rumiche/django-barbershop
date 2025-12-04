@@ -20,14 +20,17 @@ from core.apps.backoffice.views.products import (
     ProductListView,
     ProductCreateView,
     ProductUpdateView,
-    ProductDeleteView,
 )
 from core.apps.backoffice.views.orders import (
     OrderListView,
     OrderCreateView,
     OrderUpdateView,
-    OrderDeleteView,
     OrderPrintView,
+)
+from core.apps.backoffice.views.supplies import (
+    SupplyListView,
+    SupplyCreateView,
+    SupplyUpdateView,
 )
 
 
@@ -55,18 +58,20 @@ urlpatterns = [
     path("products/", ProductListView.as_view(), {"is_service": False}, name="product_list"),
     path("products/add/", ProductCreateView.as_view(), {"is_service": False}, name="product_add"),
     path("products/<int:pk>/edit/", ProductUpdateView.as_view(), {"is_service": False}, name="product_edit"),
-    path("products/<int:pk>/delete/", ProductDeleteView.as_view(), {"is_service": False}, name="product_delete"),
 
     # Services URLs (is_service=True)
     path("services/", ProductListView.as_view(), {"is_service": True}, name="service_list"),
     path("services/add/", ProductCreateView.as_view(), {"is_service": True}, name="service_add"),
     path("services/<int:pk>/edit/", ProductUpdateView.as_view(), {"is_service": True}, name="service_edit"),
-    path("services/<int:pk>/delete/", ProductDeleteView.as_view(), {"is_service": True}, name="service_delete"),
 
     # Orders URLs
     path("orders/", OrderListView.as_view(), name="order_list"),
     path("orders/add/", OrderCreateView.as_view(), name="order_add"),
     path("orders/<int:pk>/edit/", OrderUpdateView.as_view(), name="order_edit"),
-    path("orders/<int:pk>/delete/", OrderDeleteView.as_view(), name="order_delete"),
     path("orders/<int:pk>/print/", OrderPrintView.as_view(), name="order_print"),
+
+    # Supplies URLs
+    path("supplies/", SupplyListView.as_view(), name="supply_list"),
+    path("supplies/add/", SupplyCreateView.as_view(), name="supply_add"),
+    path("supplies/<int:pk>/edit/", SupplyUpdateView.as_view(), name="supply_edit"),
 ]

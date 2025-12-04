@@ -1,8 +1,45 @@
 import django_filters
 from django import forms
 from django.utils import timezone
+from django.db.models import Q
 from django.contrib.auth.models import User, Group
-from core.apps.backoffice.models import Category, Product, Order
+from core.apps.backoffice.models import Category, Product, Order, SupplyEntry
+
+
+class SupplyEntryFilter(django_filters.FilterSet):
+    keywords = django_filters.CharFilter(
+        method='filter_keywords',
+        label='Buscar',
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Producto o proveedor...'})
+    )
+    date = django_filters.DateFromToRangeFilter(
+        label='Fecha',
+        widget=django_filters.widgets.RangeWidget(attrs={'class': 'form-control', 'type': 'date'})
+    )
+
+    def filter_keywords(self, queryset, name, value):
+        return queryset.filter(
+            Q(product__name__icontains=value) | Q(supplier__icontains=value)
+        )
+
+    def __init__(self, data=None, queryset=None, *, request=None, prefix=None):
+        if data is None:
+            data = {}
+            today = timezone.now().strftime('%Y-%m-%d')
+            data['date_after'] = today
+            data['date_before'] = today
+        else:
+            data = data.copy()
+            if 'date_after' not in data and 'date_before' not in data:
+                today = timezone.now().strftime('%Y-%m-%d')
+                data['date_after'] = today
+                data['date_before'] = today
+        
+        super().__init__(data, queryset, request=request, prefix=prefix)
+
+    class Meta:
+        model = SupplyEntry
+        fields = ['keywords', 'date']
 
 
 class OrderFilter(django_filters.FilterSet):

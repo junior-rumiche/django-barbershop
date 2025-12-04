@@ -1,5 +1,5 @@
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, UpdateView, DeleteView
+from django.views.generic import CreateView, UpdateView
 from django_filters.views import FilterView
 from core.mixins import BasePageMixin
 from core.apps.backoffice.models import Category
@@ -36,10 +36,3 @@ class CategoryUpdateView(BasePageMixin, UpdateView):
     success_url = reverse_lazy("backoffice:category_list")
     page_title = "Editar Categoría"
     permission_required = "backoffice.change_category"
-
-
-class CategoryDeleteView(BasePageMixin, DeleteView):
-    model = Category
-    template_name = "backoffice/categories/delete.html"
-    success_url = reverse_lazy("backoffice:category_list")
-    permission_required = "backoffice.delete_category"

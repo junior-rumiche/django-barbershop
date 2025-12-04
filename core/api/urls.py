@@ -6,6 +6,7 @@ from core.api.views import (
     CategoryViewSet,
     ProductViewSet,
     OrderViewSet,
+    SupplyEntryViewSet,
 )
 
 router = DefaultRouter()
@@ -14,6 +15,7 @@ router.register(r'groups', GroupViewSet)
 router.register(r'categories', CategoryViewSet)
 router.register(r'products', ProductViewSet)
 router.register(r'orders', OrderViewSet)
+router.register(r'supplies', SupplyEntryViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),

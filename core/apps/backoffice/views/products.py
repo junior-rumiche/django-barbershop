@@ -45,9 +45,7 @@ class ProductCreateView(BasePageMixin, CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         is_service = self.kwargs.get("is_service", False)
-        context["page_title"] = (
-            "Nuevo Servicio" if is_service else "Nuevo Producto"
-        )
+        context["page_title"] = "Nuevo Servicio" if is_service else "Nuevo Producto"
         context["is_service"] = is_service
         return context
 
@@ -67,23 +65,9 @@ class ProductUpdateView(BasePageMixin, UpdateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         is_service = self.kwargs.get("is_service", False)
-        context["page_title"] = (
-            "Editar Servicio" if is_service else "Editar Producto"
-        )
+        context["page_title"] = "Editar Servicio" if is_service else "Editar Producto"
         context["is_service"] = is_service
         return context
-
-    def get_success_url(self):
-        is_service = self.kwargs.get("is_service", False)
-        return reverse_lazy(
-            "backoffice:service_list" if is_service else "backoffice:product_list"
-        )
-
-
-class ProductDeleteView(BasePageMixin, DeleteView):
-    model = Product
-    template_name = "backoffice/products/delete.html"
-    permission_required = "backoffice.delete_product"
 
     def get_success_url(self):
         is_service = self.kwargs.get("is_service", False)

@@ -1,7 +1,44 @@
 from django import forms
 from django.contrib.auth.models import User, Group, Permission
 from django.apps import apps
-from core.apps.backoffice.models import Category, Product, Order, OrderItem
+from core.apps.backoffice.models import Category, Product, Order, OrderItem, SupplyEntry
+
+
+class SupplyEntryForm(forms.ModelForm):
+    class Meta:
+        model = SupplyEntry
+        fields = ["product", "quantity", "unit_cost", "supplier"]
+        widgets = {
+            "product": forms.Select(attrs={"class": "form-select choices"}),
+            "quantity": forms.NumberInput(
+                attrs={"class": "form-control", "placeholder": "0"}
+            ),
+            "unit_cost": forms.NumberInput(
+                attrs={"class": "form-control", "placeholder": "0.00"}
+            ),
+            "supplier": forms.TextInput(
+                attrs={"class": "form-control", "placeholder": "Nombre del proveedor"}
+            ),
+        }
+        labels = {
+            "product": "Producto",
+            "quantity": "Cantidad",
+            "unit_cost": "Costo Unitario",
+            "supplier": "Proveedor",
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Filtrar solo productos (no servicios)
+        self.fields['product'].queryset = Product.objects.filter(is_service=False).order_by('name')
+
+        for field_name in self.errors:
+            if field_name in self.fields:
+                current_class = self.fields[field_name].widget.attrs.get("class", "")
+                if "is-invalid" not in current_class:
+                    self.fields[field_name].widget.attrs[
+                        "class"
+                    ] = f"{current_class} is-invalid".strip()
 
 
 class OrderForm(forms.ModelForm):
@@ -23,9 +60,11 @@ class OrderForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         for field_name in self.errors:
             if field_name in self.fields:
-                current_class = self.fields[field_name].widget.attrs.get('class', '')
-                if 'is-invalid' not in current_class:
-                    self.fields[field_name].widget.attrs['class'] = f'{current_class} is-invalid'.strip()
+                current_class = self.fields[field_name].widget.attrs.get("class", "")
+                if "is-invalid" not in current_class:
+                    self.fields[field_name].widget.attrs[
+                        "class"
+                    ] = f"{current_class} is-invalid".strip()
 
 
 class OrderItemForm(forms.ModelForm):
@@ -46,9 +85,11 @@ class OrderItemForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         for field_name in self.errors:
             if field_name in self.fields:
-                current_class = self.fields[field_name].widget.attrs.get('class', '')
-                if 'is-invalid' not in current_class:
-                    self.fields[field_name].widget.attrs['class'] = f'{current_class} is-invalid'.strip()
+                current_class = self.fields[field_name].widget.attrs.get("class", "")
+                if "is-invalid" not in current_class:
+                    self.fields[field_name].widget.attrs[
+                        "class"
+                    ] = f"{current_class} is-invalid".strip()
 
     def clean(self):
         cleaned_data = super().clean()
@@ -58,8 +99,7 @@ class OrderItemForm(forms.ModelForm):
         if product and quantity:
             if not product.is_service and product.stock_qty < quantity:
                 self.add_error(
-                    'quantity', 
-                    f"Stock insuficiente. Disponible: {product.stock_qty}."
+                    "quantity", f"Stock insuficiente. Disponible: {product.stock_qty}."
                 )
         return cleaned_data
 
@@ -128,7 +168,9 @@ class CategoryForm(forms.ModelForm):
                     "placeholder": "Descripción detallada",
                 }
             ),
-            "status": forms.CheckboxInput(attrs={"class": "form-check-input", "role": "switch"}),
+            "status": forms.CheckboxInput(
+                attrs={"class": "form-check-input", "role": "switch"}
+            ),
         }
         labels = {
             "name": "Nombre",
@@ -145,9 +187,11 @@ class CategoryForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         for field_name in self.errors:
             if field_name in self.fields:
-                current_class = self.fields[field_name].widget.attrs.get('class', '')
-                if 'is-invalid' not in current_class:
-                    self.fields[field_name].widget.attrs['class'] = f'{current_class} is-invalid'.strip()
+                current_class = self.fields[field_name].widget.attrs.get("class", "")
+                if "is-invalid" not in current_class:
+                    self.fields[field_name].widget.attrs[
+                        "class"
+                    ] = f"{current_class} is-invalid".strip()
 
 
 class UserForm(forms.ModelForm):
