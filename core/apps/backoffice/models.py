@@ -4,6 +4,7 @@ This module defines the data structures used in the backoffice.
 """
 
 from django.db import models, transaction
+from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
 from django.utils import timezone
 from decimal import Decimal
@@ -115,15 +116,29 @@ class Order(models.Model):
     def __str__(self):
         return f"Cliente: {self.client_name} - ${self.total_amount}"
 
+    @transaction.atomic
     def mark_as_paid(self, user_who_collected):
-        """Función auxiliar para cerrar la venta limpiamente"""
+        """
+        Cierra la venta, valida stock y descuenta inventario.
+        Si algo falla, la transacción atómica revierte todo.
+        """
         if self.status == "PAID":
             return
 
         for item in self.items.all():
             if not item.product.is_service:
-                item.product.stock_qty -= item.quantity
-                item.product.save()
+                product_locked = Product.objects.select_for_update().get(
+                    pk=item.product.pk
+                )
+
+                if product_locked.stock_qty < item.quantity:
+                    raise ValidationError(
+                        f"Stock insuficiente para '{product_locked.name}'. "
+                        f"Solicitado: {item.quantity}, Disponible: {product_locked.stock_qty}"
+                    )
+
+                product_locked.stock_qty -= item.quantity
+                product_locked.save()
 
         self.status = "PAID"
         self.collected_by = user_who_collected
@@ -187,39 +202,38 @@ class SupplyEntry(models.Model):
         return f"{self.product.name} (+{self.quantity})"
 
     def save(self, *args, **kwargs):
-        # Solo ejecutamos esto si es una entrada NUEVA
         if not self.pk:
             with transaction.atomic():
-                # A. Recuperar datos actuales del producto
-                # Bloqueamos la fila del producto para evitar condiciones de carrera
-                # self.product.refresh_from_db() # Opcional si no usamos select_for_update
-                
-                current_stock = self.product.stock_qty
-                current_cost = self.product.cost
+                locked_product = Product.objects.select_for_update().get(
+                    pk=self.product.pk
+                )
+
+                current_stock = locked_product.stock_qty
+                current_cost = locked_product.cost
 
                 # B. Calcular Valor Total del Inventario Existente
-                # (Ej: 10 unidades * 5 soles = 50 soles de valor)
                 current_inventory_value = current_stock * current_cost
 
                 # C. Calcular Valor Total de lo Nuevo
-                # (Ej: 5 unidades * 6 soles = 30 soles de valor)
                 new_entry_value = self.quantity * Decimal(self.unit_cost)
 
                 # D. Nuevo Stock Total
                 new_total_stock = current_stock + self.quantity
 
-                # E. Calcular Nuevo Costo Promedio (Evitar división por cero)
-                # (50 soles + 30 soles) / 15 unidades = 5.33 costo promedio
+                # E. Calcular Nuevo Costo Promedio
                 if new_total_stock > 0:
-                    new_average_cost = (current_inventory_value + new_entry_value) / new_total_stock
+                    new_average_cost = (
+                        current_inventory_value + new_entry_value
+                    ) / new_total_stock
                 else:
                     new_average_cost = self.unit_cost
 
-                # Actualizar Producto
-                self.product.stock_qty = new_total_stock
-                self.product.cost = new_average_cost
-                self.product.save(update_fields=['stock_qty', 'cost'])
-                
+                # Actualizar el producto BLOQUEADO
+                locked_product.stock_qty = new_total_stock
+                locked_product.cost = new_average_cost
+                locked_product.save()  # Guardamos el producto actualizado
+
+                # Finalmente guardamos la entrada (SupplyEntry)
                 super().save(*args, **kwargs)
         else:
             super().save(*args, **kwargs)
