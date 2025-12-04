@@ -42,9 +42,14 @@
                                         {% endif %}
 
                                         <div class="col-12">
-                                            <div class="form-group">
+                                            <div class="form-group has-icon-left">
                                                 <label for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>
-                                                {{ form.name }}
+                                                <div class="position-relative">
+                                                    {{ form.name }}
+                                                    <div class="form-control-icon">
+                                                        <i class="bi bi-tag"></i>
+                                                    </div>
+                                                </div>
                                                 {% if form.name.errors %}
                                                 <div class="invalid-feedback d-block">{{ form.name.errors.as_text }}</div>
                                                 {% endif %}
@@ -52,9 +57,14 @@
                                         </div>
 
                                         <div class="col-12">
-                                            <div class="form-group">
+                                            <div class="form-group has-icon-left">
                                                 <label for="{{ form.description.id_for_label }}">{{ form.description.label }}</label>
-                                                {{ form.description }}
+                                                <div class="position-relative">
+                                                    {{ form.description }}
+                                                    <div class="form-control-icon">
+                                                        <i class="bi bi-card-text"></i>
+                                                    </div>
+                                                </div>
                                                 {% if form.description.errors %}
                                                 <div class="invalid-feedback d-block">{{ form.description.errors.as_text }}</div>
                                                 {% endif %}
