@@ -1,1 +1,554 @@
 {% extends "base/backoffice/base.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block content %}
+<div class="page-heading">
+    <h3>Tablero Principal</h3>
+</div>
+<div class="page-content">
+    <!-- Main Stats Row -->
+    <section class="row">
+        <div class="col-12 col-lg-9">
+            <div class="row">
+                <div class="col-12 col-lg-4 col-md-6">
+                    <div class="card">
+                        <div class="card-body px-4 py-4-5">
+                            <div class="row">
+                                <div class="col-md-4 col-lg-12 col-xl-12 col-xxl-5 d-flex justify-content-start ">
+                                    <div class="stats-icon purple mb-2">
+                                        <i class="bi bi-cash-stack d-flex justify-content-center align-items-center"></i>
+                                    </div>
+                                </div>
+                                <div class="col-md-8 col-lg-12 col-xl-12 col-xxl-7">
+                                    <h6 class="text-muted font-semibold">Ventas Hoy</h6>
+                                    <h6 class="font-extrabold mb-0">S/. {{ stats.sales_today|intcomma }}</h6>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-lg-4 col-md-6">
+                    <div class="card">
+                        <div class="card-body px-4 py-4-5">
+                            <div class="row">
+                                <div class="col-md-4 col-lg-12 col-xl-12 col-xxl-5 d-flex justify-content-start ">
+                                    <div class="stats-icon blue mb-2">
+                                        <i class="bi bi-cart-check d-flex justify-content-center align-items-center"></i>
+                                    </div>
+                                </div>
+                                <div class="col-md-8 col-lg-12 col-xl-12 col-xxl-7">
+                                    <h6 class="text-muted font-semibold">Pedidos Hoy</h6>
+                                    <h6 class="font-extrabold mb-0">{{ stats.orders_today }}</h6>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-lg-4 col-md-6">
+                    <div class="card">
+                        <div class="card-body px-4 py-4-5">
+                            <div class="row">
+                                <div class="col-md-4 col-lg-12 col-xl-12 col-xxl-5 d-flex justify-content-start ">
+                                    <div class="stats-icon green mb-2">
+                                        <i class="bi bi-receipt d-flex justify-content-center align-items-center"></i>
+                                    </div>
+                                </div>
+                                <div class="col-md-8 col-lg-12 col-xl-12 col-xxl-7">
+                                    <h6 class="text-muted font-semibold">Ticket Promedio (Mes)</h6>
+                                    <h6 class="font-extrabold mb-0">S/. {{ stats.avg_ticket }}</h6>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-12 col-lg-4 col-md-6">
+                    <div class="card">
+                        <div class="card-body px-4 py-4-5">
+                            <div class="row">
+                                <div class="col-md-4 col-lg-12 col-xl-12 col-xxl-5 d-flex justify-content-start ">
+                                    <div class="stats-icon red mb-2">
+                                        <i class="bi bi-exclamation-triangle d-flex justify-content-center align-items-center"></i>
+                                    </div>
+                                </div>
+                                <div class="col-md-8 col-lg-12 col-xl-12 col-xxl-7">
+                                    <h6 class="text-muted font-semibold">Stock Bajo</h6>
+                                    <h6 class="font-extrabold mb-0">{{ stats.low_stock }}</h6>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                 <div class="col-12 col-lg-4 col-md-6">
+                    <div class="card">
+                        <div class="card-body px-4 py-4-5">
+                            <div class="row">
+                                <div class="col-md-4 col-lg-12 col-xl-12 col-xxl-5 d-flex justify-content-start ">
+                                    <div class="stats-icon text-white bg-info mb-2">
+                                        <i class="bi bi-box-seam d-flex justify-content-center align-items-center"></i>
+                                    </div>
+                                </div>
+                                <div class="col-md-8 col-lg-12 col-xl-12 col-xxl-7">
+                                    <h6 class="text-muted font-semibold">Valor Inventario</h6>
+                                    <h6 class="font-extrabold mb-0">S/. {{ stats.inventory_value }}</h6>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-lg-4 col-md-6">
+                    <div class="card">
+                        <div class="card-body px-4 py-4-5">
+                            <div class="row">
+                                <div class="col-md-4 col-lg-12 col-xl-12 col-xxl-5 d-flex justify-content-start ">
+                                    <div class="stats-icon text-white bg-warning mb-2">
+                                        <i class="bi bi-hourglass-split d-flex justify-content-center align-items-center"></i>
+                                    </div>
+                                </div>
+                                <div class="col-md-8 col-lg-12 col-xl-12 col-xxl-7">
+                                    <h6 class="text-muted font-semibold">Pendientes</h6>
+                                    <h6 class="font-extrabold mb-0">{{ stats.pending_orders }}</h6>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sales Chart -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h4>Tendencia de Ventas (Últimos 7 días)</h4>
+                        </div>
+                        <div class="card-body">
+                            <div id="chart-sales-trend"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Peak Hours Chart -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h4>Horas Punta (Actividad por Hora)</h4>
+                        </div>
+                        <div class="card-body">
+                            <div id="chart-peak-hours"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Staff Performance & Sales by Category -->
+             <div class="row match-height mb-4">
+                <div class="col-12 col-xl-6">
+                    <div class="card h-100">
+                        <div class="card-header">
+                            <h4>Desempeño del Mes (Staff)</h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover table-lg">
+                                    <thead>
+                                        <tr>
+                                            <th>Nombre</th>
+                                            <th class="text-center">Ventas</th>
+                                            <th class="text-end">Total Gen.</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for staff in top_staff %}
+                                        <tr>
+                                            <td class="col-3">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="avatar avatar-md bg-primary me-3">
+                                                        <span class="avatar-content text-white">{{ staff.created_by__username|slice:":2"|upper }}</span>
+                                                    </div>
+                                                    <p class="font-bold mb-0">{{ staff.created_by__first_name|default:staff.created_by__username }}</p>
+                                                </div>
+                                            </td>
+                                            <td class="text-center">{{ staff.orders_count }}</td>
+                                            <td class="text-end font-bold">S/. {{ staff.total_sales|intcomma }}</td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr><td colspan="3" class="text-center text-muted">Sin datos este mes.</td></tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-xl-6">
+                    <div class="card h-100">
+                        <div class="card-header">
+                            <h4>Ventas por Categoría</h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover table-lg">
+                                    <thead>
+                                        <tr>
+                                            <th>Categoría</th>
+                                            <th class="text-center">Cant. Vendida</th>
+                                            <th class="text-end">Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for cat in sales_by_category %}
+                                        <tr>
+                                            <td class="col-3">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="avatar avatar-md bg-success me-3">
+                                                        <span class="avatar-content text-white">{{ cat.product__category__name|slice:":1"|upper }}</span>
+                                                    </div>
+                                                    <p class="font-bold mb-0">{{ cat.product__category__name|default:"Sin Categoría" }}</p>
+                                                </div>
+                                            </td>
+                                            <td class="text-center">{{ cat.items_sold }}</td>
+                                            <td class="text-end font-bold">S/. {{ cat.total_sales|intcomma }}</td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr><td colspan="3" class="text-center text-muted">Sin datos aún.</td></tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Orders Table -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h4>Últimas Órdenes</h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover table-lg">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Cliente</th>
+                                            <th>Fecha</th>
+                                            <th>Total</th>
+                                            <th>Estado</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for order in recent_orders %}
+                                        <tr>
+                                            <td class="col-1">#{{ order.id }}</td>
+                                            <td class="col-auto">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="avatar avatar-md bg-primary">
+                                                        <span class="avatar-content text-white">{{ order.client_name|slice:":2"|upper }}</span>
+                                                    </div>
+                                                    <p class="font-bold ms-3 mb-0">{{ order.client_name }}</p>
+                                                </div>
+                                            </td>
+                                            <td class="col-auto">
+                                                <p class=" mb-0">{{ order.created_at|date:"d M Y, h:i A" }}</p>
+                                            </td>
+                                            <td class="col-auto">
+                                                <p class="mb-0 font-bold">S/. {{ order.total_amount|intcomma }}</p>
+                                            </td>
+                                            <td class="col-auto">
+                                                {% if order.status == 'PAID' %}
+                                                <span class="badge bg-success">Pagado</span>
+                                                {% elif order.status == 'PENDING' %}
+                                                <span class="badge bg-warning">Pendiente</span>
+                                                {% else %}
+                                                <span class="badge bg-danger">Anulado</span>
+                                                {% endif %}
+                                            </td>
+                                            <td class="col-auto">
+                                                {% if perms.backoffice.can_print_order %}
+                                                <a href="{% url 'backoffice:order_print' order.pk %}" target="_blank" class="btn btn-sm btn-secondary"><i class="bi bi-printer"></i></a>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="6" class="text-center">No hay órdenes recientes.</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Sidebar -->
+        <div class="col-12 col-lg-3">
+             <!-- Actions -->
+             <div class="card">
+                <div class="card-header">
+                    <h4>Acciones Rápidas</h4>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'backoffice:order_add' %}" class="btn btn-primary btn-lg"><i class="bi bi-plus-circle me-2"></i> Nueva Venta</a>
+                        <a href="{% url 'backoffice:product_add' %}" class="btn btn-success btn-lg"><i class="bi bi-box-seam me-2"></i> Agregar Producto</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Service/Product Mix Chart -->
+            <div class="card">
+                <div class="card-header">
+                    <h4>Mix de Ingresos</h4>
+                </div>
+                <div class="card-body">
+                    <div id="chart-mix"></div>
+                </div>
+            </div>
+
+            <!-- Order Status Chart -->
+            <div class="card">
+                <div class="card-header">
+                    <h4>Estado de Órdenes</h4>
+                </div>
+                <div class="card-body">
+                    <div id="chart-status"></div>
+                </div>
+            </div>
+
+            <!-- Top Products List -->
+            <div class="card">
+                <div class="card-header">
+                    <h4>Top Productos</h4>
+                </div>
+                <div class="card-content pb-4">
+                    {% for item in top_products %}
+                    <div class="recent-message d-flex px-4 py-3">
+                        <div class="avatar avatar-lg">
+                            <div class="avatar-content bg-primary text-white">{{ forloop.counter }}</div>
+                        </div>
+                        <div class="name ms-4">
+                            <h5 class="mb-1">{{ item.product__name }}</h5>
+                            <h6 class="text-muted mb-0">{{ item.total_sold }} vendidos</h6>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="px-4 py-3 text-center text-muted">
+                        Sin datos aún.
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'backoffice/extensions/apexcharts/apexcharts.min.js' %}"></script>
+<script>
+    /**
+     * -------------------------------------------------------------------------
+     * Dashboard Analytics Scripts
+     * -------------------------------------------------------------------------
+     * This script handles the initialization and rendering of ApexCharts
+     * used in the dashboard. Variables follow snake_case convention.
+     */
+
+    /**
+     * Data for the Sales Trend Chart (Last 7 days).
+     * Parsed from Django context.
+     * @type {Object}
+     */
+    var sales_data = JSON.parse('{{ chart_sales|safe }}');
+
+    /**
+     * Configuration options for the Sales Trend Area Chart.
+     * Visualizes the total sales amount over the past week.
+     * @type {Object}
+     */
+    var options_sales = {
+        annotations: {
+            position: 'back'
+        },
+        dataLabels: {
+            enabled: false
+        },
+        chart: {
+            type: 'area',
+            height: 300,
+            toolbar: {
+                show: false
+            }
+        },
+        fill: {
+            type: 'gradient',
+            gradient: {
+                shadeIntensity: 1,
+                opacityFrom: 0.7,
+                opacityTo: 0.9,
+                stops: [0, 90, 100]
+            }
+        },
+        series: sales_data.series,
+        colors: ['#435ebe'],
+        xaxis: {
+            categories: sales_data.categories
+        },
+        stroke: {
+            curve: 'smooth'
+        },
+        tooltip: {
+            y: {
+                formatter: function (val) {
+                    return "S/. " + parseFloat(val).toFixed(2);
+                }
+            }
+        }
+    };
+
+    /**
+     * The Sales Trend Chart instance.
+     * @type {ApexCharts}
+     */
+    var chart_sales = new ApexCharts(document.querySelector("#chart-sales-trend"), options_sales);
+    chart_sales.render();
+
+
+    /**
+     * Data for the Peak Hours Chart.
+     * Represents transaction counts per hour of the day (00:00 - 23:00).
+     * @type {Object}
+     */
+    var peak_data = JSON.parse('{{ chart_peak_hours|safe }}');
+
+    /**
+     * Configuration options for the Peak Hours Bar Chart.
+     * Helps identify the busiest times of the day.
+     * @type {Object}
+     */
+    var options_peak = {
+        series: peak_data.series,
+        chart: {
+            type: 'bar',
+            height: 300,
+            toolbar: {
+                show: false
+            }
+        },
+        plotOptions: {
+            bar: {
+                borderRadius: 4,
+                columnWidth: '60%',
+            }
+        },
+        dataLabels: {
+            enabled: false
+        },
+        xaxis: {
+            categories: peak_data.categories,
+            labels: {
+                rotate: -45,
+                style: {
+                    fontSize: '10px'
+                }
+            }
+        },
+        colors: ['#435ebe']
+    };
+
+    /**
+     * The Peak Hours Chart instance.
+     * @type {ApexCharts}
+     */
+    var chart_peak = new ApexCharts(document.querySelector("#chart-peak-hours"), options_peak);
+    chart_peak.render();
+
+
+    /**
+     * Data for the Product vs Service Mix Chart.
+     * @type {Object}
+     */
+    var mix_data = JSON.parse('{{ chart_mix|safe }}');
+
+    /**
+     * Configuration options for the Mix Donut Chart.
+     * Shows the proportion of revenue between Services and Products.
+     * @type {Object}
+     */
+    var options_mix = {
+        series: mix_data.series,
+        chart: {
+            type: 'donut',
+            height: 250,
+        },
+        labels: mix_data.labels,
+        colors: ['#ffc107', '#435ebe'], // Yellow for Services, Primary Blue for Products
+        legend: {
+            position: 'bottom'
+        },
+        dataLabels: {
+            enabled: false
+        },
+        tooltip: {
+            y: {
+                formatter: function (val) {
+                    return "S/. " + parseFloat(val).toFixed(2);
+                }
+            }
+        }
+    };
+
+    /**
+     * The Mix Chart instance.
+     * @type {ApexCharts}
+     */
+    var chart_mix = new ApexCharts(document.querySelector("#chart-mix"), options_mix);
+    chart_mix.render();
+
+
+    /**
+     * Data for the Order Status Chart.
+     * @type {Object}
+     */
+    var status_data = JSON.parse('{{ chart_status|safe }}');
+
+    /**
+     * Configuration options for the Status Pie Chart.
+     * Shows the distribution of order statuses (Paid, Pending, Canceled).
+     * @type {Object}
+     */
+    var options_status = {
+        series: status_data.series,
+        chart: {
+            type: 'pie',
+            height: 250,
+        },
+        labels: status_data.labels,
+        colors: ['#435ebe', '#ffc107', '#dc3545'], // Primary, Warning, Danger
+        legend: {
+            position: 'bottom'
+        },
+        dataLabels: {
+            enabled: false
+        }
+    };
+
+    /**
+     * The Status Chart instance.
+     * @type {ApexCharts}
+     */
+    var chart_status = new ApexCharts(document.querySelector("#chart-status"), options_status);
+    chart_status.render();
+</script>
+{% endblock %}
