@@ -37,7 +37,7 @@ from core.apps.backoffice.views.supplies import (
 urlpatterns = [
     path("login/", BackofficeLoginView.as_view(), name="login"),
     path("logout/", BackofficeLogoutView.as_view(), name="logout"),
-    path("dashboard/", DashboardView.as_view(), name="dashboard"),
+    path("", DashboardView.as_view(), name="dashboard"),
     
     # Users URLs
     path("users/", UserListView.as_view(), name="user_list"),

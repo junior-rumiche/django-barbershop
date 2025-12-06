@@ -84,7 +84,7 @@
                            {{ forloop.counter }}
                            {% endif %}
                         </td>
-                        <td>{{ supply.date|date:"d/m/Y H:i" }}</td>
+                        <td>{{ supply.date|date:"d M Y, h:i A" }}</td>
                         <td>{{ supply.product.name }}</td>
                         <td>{{ supply.supplier|default:"-" }}</td>
                         <td>{{ supply.quantity }}</td>
