@@ -3,6 +3,7 @@
 
 {% block styles %}
 <link rel="stylesheet" href="{% static 'backoffice/extensions/sweetalert2/sweetalert2.min.css' %}">
+<link rel="stylesheet" href="{% static 'backoffice/extensions/flatpickr/flatpickr.min.css' %}">
 {% endblock %}
 
 {% block title %}{{ page_title }}{% endblock %}
@@ -136,6 +137,41 @@
 
 {% block scripts %}
 <script src="{% static 'backoffice/extensions/sweetalert2/sweetalert2.min.js' %}"></script>
+<script src="{% static 'backoffice/extensions/flatpickr/flatpickr.min.js' %}"></script>
+<script src="{% static 'backoffice/extensions/flatpickr/l10n/es.js' %}"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const urls_params = new URLSearchParams(window.location.search);
+        let has_date_filter = false;
+        for (const key of urls_params.keys()) {
+            if (key.includes('date')) {
+                has_date_filter = true;
+                break;
+            }
+        }
+
+        const start_input = document.getElementById('id_date_0');
+        const end_input = document.getElementById('id_date_1');
+
+        if (start_input) {
+            flatpickr(start_input, {
+                locale: "es",
+                dateFormat: "Y-m-d",
+                allowInput: true,
+                defaultDate: has_date_filter ? null : new Date(new Date().getFullYear(), new Date().getMonth(), 1)
+            });
+        }
+
+        if (end_input) {
+            flatpickr(end_input, {
+                locale: "es",
+                dateFormat: "Y-m-d",
+                allowInput: true,
+                defaultDate: has_date_filter ? null : new Date()
+            });
+        }
+    });
+</script>
 <script>
    /**
     * Deletes a supply entry asynchronously after user confirmation via SweetAlert2.

@@ -3,6 +3,7 @@
 
 {% block styles %}
 <link rel="stylesheet" href="{% static 'backoffice/extensions/sweetalert2/sweetalert2.min.css' %}">
+<link rel="stylesheet" href="{% static 'backoffice/extensions/flatpickr/flatpickr.min.css' %}">
 {% endblock %}
 
 {% block title %}{{ page_title }}{% endblock %}
@@ -61,7 +62,7 @@
                      {{ filter.form.created_at.label }}
                   </label>
                   <div class="d-flex gap-2">
-                      {{ filter.form.created_at }}
+                     {{ filter.form.created_at }}
                   </div>
                </div>
                <div class="col-md-2 d-flex align-items-end">
@@ -119,15 +120,13 @@
                               {% endif %}
                               {% if perms.backoffice.can_print_order %}
                               <a href="{% url 'backoffice:order_print' order.pk %}" class="btn btn-sm btn-dark"
-                                 target="_blank"
-                                 data-bs-toggle="tooltip" data-bs-placement="top" title="Imprimir">
+                                 target="_blank" data-bs-toggle="tooltip" data-bs-placement="top" title="Imprimir">
                                  <i class="bi bi-printer"></i>
                               </a>
                               {% endif %}
                               {% if perms.backoffice.view_order %}
-                              <a href="#" class="btn btn-sm btn-info"
-                                 data-bs-toggle="modal" data-bs-target="#orderDetailModal"
-                                 data-order-id="{{ order.id }}"
+                              <a href="#" class="btn btn-sm btn-info" data-bs-toggle="modal"
+                                 data-bs-target="#orderDetailModal" data-order-id="{{ order.id }}"
                                  data-bs-placement="top" title="Ver Detalle">
                                  <i class="bi bi-eye"></i>
                               </a>
@@ -140,8 +139,8 @@
                               {% endif %}
                               {% if perms.backoffice.delete_order %}
                               <button type="button" class="btn btn-sm btn-danger"
-                                 onclick="delete_order({{ order.pk }}, '#{{ order.pk }}')"
-                                 data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                                 onclick="delete_order({{ order.pk }}, '#{{ order.pk }}')" data-bs-toggle="tooltip"
+                                 data-bs-placement="top" title="Eliminar">
                                  <i class="bi bi-trash"></i>
                               </button>
                               {% endif %}
@@ -169,25 +168,46 @@
 
 <!-- Order Detail Modal -->
 <div class="modal fade" id="orderDetailModal" tabindex="-1" aria-labelledby="orderDetailModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="orderDetailModalLabel">Detalle de la Orden</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+   <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+         <div class="modal-header">
+            <h5 class="modal-title" id="orderDetailModalLabel">Detalle de la Orden</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+         </div>
+         <div class="modal-body">
+            <!-- Content will be loaded here dynamically -->
+         </div>
+         <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+         </div>
       </div>
-      <div class="modal-body">
-        <!-- Content will be loaded here dynamically -->
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-      </div>
-    </div>
-  </div>
+   </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script src="{% static 'backoffice/extensions/sweetalert2/sweetalert2.min.js' %}"></script>
+<script src="{% static 'backoffice/extensions/flatpickr/flatpickr.min.js' %}"></script>
+<script src="{% static 'backoffice/extensions/flatpickr/l10n/es.js' %}"></script>
+<script>
+   document.addEventListener("DOMContentLoaded", function () {
+      const urls_params = new URLSearchParams(window.location.search);
+      let has_date_filter = false;
+      for (const key of urls_params.keys()) {
+         if (key.includes('created_at')) {
+            has_date_filter = true;
+            break;
+         }
+      }
+
+      flatpickr("input[placeholder='YYYY-MM-DD']", {
+         locale: "es",
+         dateFormat: "Y-m-d",
+         allowInput: true,
+         defaultDate: has_date_filter ? null : new Date()
+      });
+   });
+</script>
 <script>
    /**
     * @fileoverview Manages interactions on the order list page.
