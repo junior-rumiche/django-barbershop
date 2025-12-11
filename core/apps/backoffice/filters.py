@@ -74,6 +74,8 @@ class OrderFilter(django_filters.FilterSet):
     )
 
     def __init__(self, data=None, queryset=None, *, request=None, prefix=None):
+        # Only apply defaults if no data is provided at all
+        # This preserves the user's filter choices when paginating
         if data is None:
             data = {}
             today = timezone.now().strftime("%Y-%m-%d")
@@ -81,13 +83,8 @@ class OrderFilter(django_filters.FilterSet):
             data["created_at_before"] = today
             data["status"] = "PENDING"
         else:
+            # data is provided (from GET parameters), don't override it
             data = data.copy()
-            if "created_at_after" not in data and "created_at_before" not in data:
-                today = timezone.now().strftime("%Y-%m-%d")
-                data["created_at_after"] = today
-                data["created_at_before"] = today
-            if "status" not in data:
-                data["status"] = "PENDING"
 
         super().__init__(data, queryset, request=request, prefix=prefix)
 
