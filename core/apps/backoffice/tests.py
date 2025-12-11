@@ -23,3 +23,23 @@ class OrderPrintViewTest(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['Content-Type'], 'application/pdf')
+
+
+class ProductDurationTest(TestCase):
+    def test_product_duration_default(self):
+        category = Category.objects.create(name="Test Cat")
+        product = Product.objects.create(name="Test Prod", price=10, category=category)
+        self.assertEqual(product.duration, 30)
+        self.assertFalse(product.is_service)
+
+    def test_service_duration(self):
+        category = Category.objects.create(name="Test Cat")
+        service = Product.objects.create(
+            name="Test Service", 
+            price=20, 
+            category=category, 
+            is_service=True, 
+            duration=45
+        )
+        self.assertEqual(service.duration, 45)
+        self.assertTrue(service.is_service)

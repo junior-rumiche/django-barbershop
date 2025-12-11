@@ -113,6 +113,7 @@ class ProductForm(forms.ModelForm):
             "price",
             "cost",
             "is_service",
+            "duration",
             "stock_qty",
             "min_stock_alert",
         ]
@@ -130,6 +131,9 @@ class ProductForm(forms.ModelForm):
             "is_service": forms.CheckboxInput(
                 attrs={"class": "form-check-input", "role": "switch"}
             ),
+            "duration": forms.NumberInput(
+                attrs={"class": "form-control", "placeholder": "30"}
+            ),
             "stock_qty": forms.NumberInput(
                 attrs={"class": "form-control", "placeholder": "0"}
             ),
@@ -143,6 +147,7 @@ class ProductForm(forms.ModelForm):
             "price": "Precio Venta",
             "cost": "Costo Compra",
             "is_service": "¿Es Servicio?",
+            "duration": "Duración (min)",
             "stock_qty": "Stock Actual",
             "min_stock_alert": "Alerta Stock Mínimo",
         }
@@ -151,6 +156,16 @@ class ProductForm(forms.ModelForm):
                 "unique": "Ya existe un producto con este nombre.",
             }
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name in self.errors:
+            if field_name in self.fields:
+                current_class = self.fields[field_name].widget.attrs.get("class", "")
+                if "is-invalid" not in current_class:
+                    self.fields[field_name].widget.attrs[
+                        "class"
+                    ] = f"{current_class} is-invalid".strip()
 
 
 class CategoryForm(forms.ModelForm):

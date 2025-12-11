@@ -70,6 +70,9 @@
                         <th>Nombre</th>
                         <th>Categoría</th>
                         <th>Precio</th>
+                        {% if is_service %}
+                        <th>Duración</th>
+                        {% endif %}
                         {% if not is_service %}
                         <th>Costo</th>
                         <th>Stock</th>
@@ -90,6 +93,9 @@
                         <td>{{ product.name }}</td>
                         <td>{{ product.category.name|default:"-" }}</td>
                         <td>S/ {{ product.price }}</td>
+                        {% if is_service %}
+                        <td>{{ product.duration }} min</td>
+                        {% endif %}
                         {% if not is_service %}
                         <td>S/ {{ product.cost }}</td>
                         <td>

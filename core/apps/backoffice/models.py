@@ -49,6 +49,11 @@ class Product(models.Model):
         verbose_name="¿Es Servicio?",
         help_text="Marcar si es corte, barba, etc.",
     )
+    duration = models.PositiveIntegerField(
+        default=30,
+        verbose_name="Duración (min)",
+        help_text="Tiempo estimado en minutos.",
+    )
     stock_qty = models.IntegerField(default=0, verbose_name="Stock Actual")
     min_stock_alert = models.IntegerField(
         default=5, verbose_name="Alerta de Stock Mínimo"

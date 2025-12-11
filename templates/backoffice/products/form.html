@@ -81,6 +81,26 @@
                                                 {% endif %}
                                             </div>
                                         </div>
+                                        {% else %}
+                                        <input type="hidden" name="cost" value="0">
+                                        {% endif %}
+
+                                        {% if is_service %}
+                                        <!-- Duración (Solo visible si es servicio) -->
+                                        <div class="col-12 col-md-6 service-only-field">
+                                            <div class="form-group">
+                                                <label for="{{ form.duration.id_for_label }}">{{ form.duration.label }}</label>
+                                                {{ form.duration }}
+                                                {% if form.duration.errors %}
+                                                <div class="invalid-feedback d-block">{{ form.duration.errors|first }}</div>
+                                                {% endif %}
+                                                {% if form.duration.help_text %}
+                                                <small class="text-muted">{{ form.duration.help_text }}</small>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        {% else %}
+                                        <input type="hidden" name="duration" value="0">
                                         {% endif %}
 
                                         <!-- Campo oculto para is_service -->
@@ -108,6 +128,9 @@
                                                 {% endif %}
                                             </div>
                                         </div>
+                                        {% else %}
+                                        <input type="hidden" name="stock_qty" value="0">
+                                        <input type="hidden" name="min_stock_alert" value="5">
                                         {% endif %}
 
                                         <!-- Botones -->
