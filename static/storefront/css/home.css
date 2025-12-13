@@ -642,6 +642,34 @@ p.lead {
     margin-left: 5px;
 }
 
+.social-btn {
+    width: 40px;
+    height: 40px;
+    background-color: #171717; /* neutral-900 approx */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.social-btn i {
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.social-btn:hover {
+    background-color: white;
+    transform: translateY(-3px);
+}
+
+.social-btn:hover i {
+    color: black !important; /* Force override if needed */
+}
+
 .newsletter-form {
     display: flex;
     flex-direction: column;
