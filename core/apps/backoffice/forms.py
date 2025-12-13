@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User, Group, Permission
 from django.apps import apps
-from core.apps.backoffice.models import Category, Product, Order, OrderItem, SupplyEntry, BarberProfile
+from core.apps.backoffice.models import Category, Product, Order, OrderItem, SupplyEntry, BarberProfile, WorkSchedule
 
 
 class SupplyEntryForm(forms.ModelForm):
@@ -388,3 +388,97 @@ class BarberProfileForm(forms.ModelForm):
                     self.fields[field_name].widget.attrs[
                         "class"
                     ] = f"{current_class} is-invalid".strip()
+
+
+class WorkScheduleForm(forms.ModelForm):
+    class Meta:
+        model = WorkSchedule
+        fields = [
+            "day_of_week",
+            "start_hour",
+            "end_hour",
+            "lunch_start",
+            "lunch_end",
+        ]
+        widgets = {
+            "day_of_week": forms.Select(attrs={"class": "form-select"}),
+            "start_hour": forms.TextInput(
+                attrs={"class": "form-control flatpickr-time h-100", "placeholder": "09:00 AM"}
+            ),
+            "end_hour": forms.TextInput(
+                attrs={"class": "form-control flatpickr-time h-100", "placeholder": "05:00 PM"}
+            ),
+            "lunch_start": forms.TextInput(
+                attrs={"class": "form-control flatpickr-time h-100", "placeholder": "01:00 PM"}
+            ),
+            "lunch_end": forms.TextInput(
+                attrs={"class": "form-control flatpickr-time h-100", "placeholder": "02:00 PM"}
+            ),
+        }
+        labels = {
+            "day_of_week": "Día",
+            "start_hour": "Entrada",
+            "end_hour": "Salida",
+            "lunch_start": "Inicio Refrigerio",
+            "lunch_end": "Fin Refrigerio",
+        }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        start = cleaned_data.get("start_hour")
+        end = cleaned_data.get("end_hour")
+        lunch_start = cleaned_data.get("lunch_start")
+        lunch_end = cleaned_data.get("lunch_end")
+        
+        if start and end and start >= end:
+            self.add_error("end_hour", "La hora de salida debe ser posterior a la de entrada.")
+
+        if lunch_start and lunch_end:
+            if lunch_start >= lunch_end:
+                self.add_error("lunch_end", "El fin de refrigerio debe ser posterior al inicio.")
+            if start and lunch_start < start:
+                self.add_error("lunch_start", "El refrigerio no puede iniciar antes de la entrada.")
+            
+            if end and lunch_end > end:
+                self.add_error("lunch_end", "El refrigerio no puede terminar después de la salida.")
+
+        return cleaned_data
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name in self.errors:
+            if field_name in self.fields:
+                current_class = self.fields[field_name].widget.attrs.get("class", "")
+                if "is-invalid" not in current_class:
+                    self.fields[field_name].widget.attrs[
+                        "class"
+                    ] = f"{current_class} is-invalid".strip()
+
+
+class BaseWorkScheduleFormSet(forms.BaseInlineFormSet):
+    def clean(self):
+        super().clean()
+        if any(self.errors):
+            return
+
+        days = []
+        for form in self.forms:
+            if self.can_delete and self._should_delete_form(form):
+                continue
+            
+            day = form.cleaned_data.get("day_of_week")
+            if day in days:
+                form.add_error("day_of_week", "Este día ya está registrado.")
+            elif day is not None:
+                days.append(day)
+
+
+WorkScheduleFormSet = forms.inlineformset_factory(
+    BarberProfile,
+    WorkSchedule,
+    form=WorkScheduleForm,
+    formset=BaseWorkScheduleFormSet,
+    extra=7, 
+    can_delete=True,
+)
+

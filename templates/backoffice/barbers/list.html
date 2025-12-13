@@ -101,6 +101,14 @@
                         </td>
                         <td>
                            <div class="d-flex gap-2">
+                              {% if perms.backoffice.view_barberprofile %}
+                              <a href="#" class="btn btn-sm btn-info" 
+                                 data-bs-toggle="modal" data-bs-target="#barberDetailModal" 
+                                 data-barber-id="{{ barber.pk }}"
+                                 data-bs-placement="top" title="Ver Detalle">
+                                 <i class="bi bi-eye"></i>
+                              </a>
+                              {% endif %}
                               {% if perms.backoffice.change_barberprofile %}
                               <a href="{% url 'backoffice:barber_edit' barber.pk %}" class="btn btn-sm btn-primary"
                                  data-bs-toggle="tooltip" data-bs-placement="top" title="Editar">
@@ -132,11 +140,128 @@
       </div>
    </section>
 </div>
+
+<!-- Barber Detail Modal -->
+<div class="modal fade" id="barberDetailModal" tabindex="-1" aria-labelledby="barberDetailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="barberDetailModalLabel">Detalle del Barbero</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Content will be loaded dynamically -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
 <script src="{% static 'backoffice/extensions/sweetalert2/sweetalert2.min.js' %}"></script>
 <script>
+    /**
+     * @fileoverview Manages interactions on the barber list page.
+     * Handles fetching and displaying barber details in a modal and deletion logic.
+     */
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const barber_detail_modal = document.getElementById('barberDetailModal');
+
+        if (barber_detail_modal) {
+            barber_detail_modal.addEventListener('show.bs.modal', async function (event) {
+                const trigger_button = event.relatedTarget;
+                const barber_id = trigger_button.getAttribute('data-barber-id');
+                const modal_body = barber_detail_modal.querySelector('.modal-body');
+                const modal_title = barber_detail_modal.querySelector('.modal-title');
+
+                // 1. Set loading state
+                modal_title.textContent = `Cargando...`;
+                modal_body.innerHTML = `
+                   <div class="d-flex justify-content-center my-5">
+                      <div class="spinner-border text-primary" role="status">
+                         <span class="visually-hidden">Cargando...</span>
+                      </div>
+                   </div>`;
+
+                try {
+                    // 2. Fetch data
+                    const response = await fetch(`/api/barbers/${barber_id}/?format=json`);
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    const barber = await response.json();
+
+                    // 3. Build HTML
+                    modal_title.textContent = `Detalle: ${barber.nickname}`;
+                    
+                    let schedules_html = '';
+                    if (barber.schedules && barber.schedules.length > 0) {
+                        barber.schedules.forEach(schedule => {
+                            // Helper to format time strings (HH:MM:SS -> HH:MM)
+                            const formatTime = (timeStr) => timeStr ? timeStr.slice(0, 5) : '';
+
+                            const lunch = (schedule.lunch_start && schedule.lunch_end) 
+                                ? `${formatTime(schedule.lunch_start)} - ${formatTime(schedule.lunch_end)}` 
+                                : 'Sin refrigerio';
+                            
+                            schedules_html += `
+                                <tr>
+                                    <td>${schedule.day_name}</td>
+                                    <td>${formatTime(schedule.start_hour)} - ${formatTime(schedule.end_hour)}</td>
+                                    <td>${lunch}</td>
+                                </tr>
+                            `;
+                        });
+                    } else {
+                        schedules_html = '<tr><td colspan="3" class="text-center">No hay horarios registrados.</td></tr>';
+                    }
+
+                    const photo_html = barber.photo 
+                        ? `<img src="${barber.photo}" class="img-fluid rounded mb-3" alt="${barber.nickname}" style="max-height: 200px;">` 
+                        : `<div class="bg-light d-flex align-items-center justify-content-center rounded mb-3" style="height: 200px;"><i class="bi bi-person fs-1 text-secondary"></i></div>`;
+
+                    const status_badge = barber.is_active 
+                        ? '<span class="badge bg-success">Disponible</span>' 
+                        : '<span class="badge bg-danger">No Disponible</span>';
+
+                    modal_body.innerHTML = `
+                        <div class="row">
+                            <div class="col-md-4 text-center">
+                                ${photo_html}
+                                <h5 class="mt-2">${barber.nickname}</h5>
+                                <p class="text-muted small">${barber.user_name}</p>
+                                ${status_badge}
+                            </div>
+                            <div class="col-md-8">
+                                <h6>Horarios de Trabajo</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-striped table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>Día</th>
+                                                <th>Jornada</th>
+                                                <th>Refrigerio</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${schedules_html}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                } catch (error) {
+                    console.error('Error fetching barber details:', error);
+                    modal_body.innerHTML = '<div class="alert alert-danger">Error al cargar la información. Intente nuevamente.</div>';
+                }
+            });
+        }
+    });
+
    async function delete_barber(id, name) {
       const result = await Swal.fire({
          title: '¿Estás seguro?',

@@ -262,3 +262,37 @@ class BarberProfile(models.Model):
 
     def __str__(self):
         return self.nickname
+
+
+class WorkSchedule(models.Model):
+    # Django usa 0=Lunes, 6=Domingo
+    DAYS = [
+        (0, "Lunes"),
+        (1, "Martes"),
+        (2, "Miércoles"),
+        (3, "Jueves"),
+        (4, "Viernes"),
+        (5, "Sábado"),
+        (6, "Domingo"),
+    ]
+
+    barber = models.ForeignKey(
+        BarberProfile, related_name="schedules", on_delete=models.CASCADE
+    )
+    day_of_week = models.IntegerField(choices=DAYS, verbose_name="Día de la Semana")
+
+    start_hour = models.TimeField(verbose_name="Hora Entrada")
+    end_hour = models.TimeField(verbose_name="Hora Salida")
+    lunch_start = models.TimeField(
+        null=True, blank=True, verbose_name="Inicio Refrigerio"
+    )
+    lunch_end = models.TimeField(null=True, blank=True, verbose_name="Fin Refrigerio")
+
+    class Meta:
+        unique_together = ("barber", "day_of_week")
+        verbose_name = "Horario Laboral"
+        verbose_name_plural = "Horarios Laborales"
+        ordering = ["day_of_week"]
+
+    def __str__(self):
+        return f"{self.barber.nickname} - {self.get_day_of_week_display()}"

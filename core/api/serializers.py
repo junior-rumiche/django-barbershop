@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User, Group
-from core.apps.backoffice.models import Category, Product, Order, OrderItem, SupplyEntry, BarberProfile
+from core.apps.backoffice.models import Category, Product, Order, OrderItem, SupplyEntry, BarberProfile, WorkSchedule
 
 
 class SupplyEntrySerializer(serializers.ModelSerializer):
@@ -79,8 +79,17 @@ class GroupSerializer(serializers.ModelSerializer):
         fields = ["id", "name"]
 
 
+class WorkScheduleSerializer(serializers.ModelSerializer):
+    day_name = serializers.CharField(source="get_day_of_week_display", read_only=True)
+
+    class Meta:
+        model = WorkSchedule
+        fields = "__all__"
+
+
 class BarberProfileSerializer(serializers.ModelSerializer):
     user_name = serializers.CharField(source="user.get_full_name", read_only=True)
+    schedules = WorkScheduleSerializer(many=True, read_only=True)
 
     class Meta:
         model = BarberProfile

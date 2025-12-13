@@ -5,6 +5,7 @@
 <link rel="stylesheet" href="{% static 'backoffice/extensions/filepond/filepond.css' %}">
 <link rel="stylesheet" href="{% static 'backoffice/extensions/filepond-plugin-image-preview/filepond-plugin-image-preview.css' %}">
 <link rel="stylesheet" href="{% static 'backoffice/extensions/toastify-js/src/toastify.css' %}">
+<link rel="stylesheet" href="{% static 'backoffice/extensions/flatpickr/flatpickr.min.css' %}">
 <style>
     .filepond--root {
         margin-bottom: 0;
@@ -104,6 +105,79 @@
                                             </div>
                                         </div>
 
+                                        <div class="col-12 mt-4">
+                                            <h4 class="mb-3">Horarios de Trabajo</h4>
+                                            {% if schedules.non_form_errors %}
+                                            <div class="alert alert-danger">
+                                                {{ schedules.non_form_errors }}
+                                            </div>
+                                            {% endif %}
+                                            {{ schedules.management_form }}
+                                            <div class="table-responsive">
+                                                <table class="table table-bordered">
+                                                    <thead>
+                                                        <tr class="text-center">
+                                                            <th style="width: 15%;">Día</th>
+                                                            <th style="width: 18%;">Hora Entrada</th>
+                                                            <th style="width: 18%;">Hora Salida</th>
+                                                            <th style="width: 18%;">Inicio Refrigerio</th>
+                                                            <th style="width: 18%;">Fin Refrigerio</th>
+                                                            <th style="width: 13%;">Eliminar</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for form in schedules %}
+                                                        {{ form.id }}
+                                                        <tr>
+                                                            <td class="align-middle">
+                                                                {{ form.day_of_week }}
+                                                                {% if form.day_of_week.errors %}
+                                                                <div class="invalid-feedback d-block">{{ form.day_of_week.errors.0 }}</div>
+                                                                {% endif %}
+                                                            </td>
+                                                            <td class="align-middle">
+                                                                {{ form.start_hour }}
+                                                                {% if form.start_hour.errors %}
+                                                                <div class="invalid-feedback d-block">{{ form.start_hour.errors.0 }}</div>
+                                                                {% endif %}
+                                                            </td>
+                                                            <td class="align-middle">
+                                                                {{ form.end_hour }}
+                                                                {% if form.end_hour.errors %}
+                                                                <div class="invalid-feedback d-block">{{ form.end_hour.errors.0 }}</div>
+                                                                {% endif %}
+                                                            </td>
+                                                            <td class="align-middle">
+                                                                {{ form.lunch_start }}
+                                                                {% if form.lunch_start.errors %}
+                                                                <div class="invalid-feedback d-block">{{ form.lunch_start.errors.0 }}</div>
+                                                                {% endif %}
+                                                            </td>
+                                                            <td class="align-middle">
+                                                                {{ form.lunch_end }}
+                                                                {% if form.lunch_end.errors %}
+                                                                <div class="invalid-feedback d-block">{{ form.lunch_end.errors.0 }}</div>
+                                                                {% endif %}
+                                                            </td>
+                                                            <td class="text-center align-middle">
+                                                                {% if schedules.can_delete %}
+                                                                    {{ form.DELETE }}
+                                                                {% endif %}
+                                                            </td>
+                                                        </tr>
+                                                        {% if form.non_field_errors %}
+                                                        <tr>
+                                                            <td colspan="6" class="text-danger">
+                                                                {{ form.non_field_errors }}
+                                                            </td>
+                                                        </tr>
+                                                        {% endif %}
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+
                                         <div class="col-12 d-flex justify-content-end">
                                             <a href="{% url 'backoffice:barber_list' %}"
                                                 class="btn btn-light-secondary me-1 mb-1">
@@ -131,6 +205,8 @@
 <script src="{% static 'backoffice/extensions/filepond-plugin-image-preview/filepond-plugin-image-preview.min.js' %}"></script>
 <script src="{% static 'backoffice/extensions/filepond/filepond.js' %}"></script>
 <script src="{% static 'backoffice/extensions/toastify-js/src/toastify.js' %}"></script>
+<script src="{% static 'backoffice/extensions/flatpickr/flatpickr.min.js' %}"></script>
+<script src="{% static 'backoffice/extensions/flatpickr/l10n/es.js' %}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         FilePond.registerPlugin(FilePondPluginImagePreview);
@@ -154,6 +230,17 @@
         if (default_file) {
             pond.addFile(default_file);
         }
+
+        flatpickr(".flatpickr-time", {
+            enableTime: true,
+            noCalendar: true,
+            dateFormat: "H:i", 
+            altInput: true,    
+            altFormat: "h:i K", 
+            time_24hr: false,
+            locale: "es",
+            allowInput: true
+        });
     });
 </script>
 {% endblock %}
