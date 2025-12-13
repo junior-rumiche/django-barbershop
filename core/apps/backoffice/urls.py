@@ -36,7 +36,9 @@ from core.apps.backoffice.views.barbers import (
     BarberListView,
     BarberCreateView,
     BarberUpdateView,
+    BarberUpdateView,
 )
+from core.apps.backoffice.views.profile import ProfileUpdateView
 
 
 urlpatterns = [
@@ -44,6 +46,9 @@ urlpatterns = [
     path("logout/", BackofficeLogoutView.as_view(), name="logout"),
     path("", DashboardView.as_view(), name="dashboard"),
     
+    # Profile
+    path("profile/", ProfileUpdateView.as_view(), name="user_profile"),
+
     # Users URLs
     path("users/", UserListView.as_view(), name="user_list"),
     path("users/add/", UserCreateView.as_view(), name="user_add"),

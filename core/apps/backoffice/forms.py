@@ -482,3 +482,38 @@ WorkScheduleFormSet = forms.inlineformset_factory(
     can_delete=True,
 )
 
+
+class UserProfileForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ["first_name", "last_name", "email"]
+        widgets = {
+            "first_name": forms.TextInput(attrs={"class": "form-control"}),
+            "last_name": forms.TextInput(attrs={"class": "form-control"}),
+            "email": forms.EmailInput(attrs={"class": "form-control"}),
+        }
+        labels = {
+            "first_name": "Nombres",
+            "last_name": "Apellidos",
+            "email": "Correo Electrónico",
+        }
+
+    def clean_email(self):
+        email = self.cleaned_data.get("email")
+        if (
+            email
+            and User.objects.filter(email=email).exclude(pk=self.instance.pk).exists()
+        ):
+            raise forms.ValidationError("Este correo electrónico ya está en uso.")
+        return email
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name in self.errors:
+            if field_name in self.fields:
+                current_class = self.fields[field_name].widget.attrs.get("class", "")
+                if "is-invalid" not in current_class:
+                    self.fields[field_name].widget.attrs[
+                        "class"
+                    ] = f"{current_class} is-invalid".strip()
+
