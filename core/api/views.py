@@ -3,7 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.contrib.auth.models import User, Group
 from django.core.exceptions import ValidationError
-from core.apps.backoffice.models import Category, Product, Order, SupplyEntry
+from core.apps.backoffice.models import Category, Product, Order, SupplyEntry, BarberProfile
 from core.api.serializers import (
     UserSerializer,
     GroupSerializer,
@@ -11,6 +11,7 @@ from core.api.serializers import (
     ProductSerializer,
     OrderSerializer,
     SupplyEntrySerializer,
+    BarberProfileSerializer,
 )
 
 
@@ -103,3 +104,15 @@ class GroupViewSet(viewsets.ModelViewSet):
     queryset = Group.objects.all().order_by("name")
     serializer_class = GroupSerializer
     permission_classes = [permissions.DjangoModelPermissions]
+
+
+class BarberProfileViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows barbers to be viewed or edited.
+    """
+
+    queryset = BarberProfile.objects.all().order_by("nickname")
+    serializer_class = BarberProfileSerializer
+    permission_classes = [permissions.DjangoModelPermissions]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ["nickname", "user__username", "user__first_name"]

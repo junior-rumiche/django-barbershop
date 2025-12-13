@@ -104,6 +104,15 @@
                 </li>
                 {% endif %}
 
+                {% if perms.backoffice.view_barberprofile %}
+                <li class="sidebar-item  {% if 'barber_' in request.resolver_match.url_name %}active{% endif %}">
+                    <a href="{% url 'backoffice:barber_list' %}" class='sidebar-link'>
+                        <i class="bi bi-emoji-sunglasses"></i>
+                        <span>Barberos</span>
+                    </a>
+                </li>
+                {% endif %}
+
             </ul>
         </div>
     </div>

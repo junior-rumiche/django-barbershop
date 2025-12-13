@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User, Group, Permission
 from django.apps import apps
-from core.apps.backoffice.models import Category, Product, Order, OrderItem, SupplyEntry
+from core.apps.backoffice.models import Category, Product, Order, OrderItem, SupplyEntry, BarberProfile
 
 
 class SupplyEntryForm(forms.ModelForm):
@@ -356,3 +356,35 @@ class GroupForm(forms.ModelForm):
                 grouped[label].append(widget)
 
         return grouped.items()
+
+
+class BarberProfileForm(forms.ModelForm):
+    class Meta:
+        model = BarberProfile
+        fields = ["user", "nickname", "photo", "is_active"]
+        widgets = {
+            "user": forms.Select(attrs={"class": "form-select choices"}),
+            "nickname": forms.TextInput(
+                attrs={"class": "form-control", "placeholder": "Apodo"}
+            ),
+            "photo": forms.FileInput(attrs={"class": "form-control"}),
+            "is_active": forms.CheckboxInput(
+                attrs={"class": "form-check-input", "role": "switch"}
+            ),
+        }
+        labels = {
+            "user": "Usuario",
+            "nickname": "Apodo",
+            "photo": "Foto",
+            "is_active": "Disponible en Web",
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name in self.errors:
+            if field_name in self.fields:
+                current_class = self.fields[field_name].widget.attrs.get("class", "")
+                if "is-invalid" not in current_class:
+                    self.fields[field_name].widget.attrs[
+                        "class"
+                    ] = f"{current_class} is-invalid".strip()

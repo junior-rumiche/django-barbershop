@@ -3,7 +3,7 @@ from django import forms
 from django.utils import timezone
 from django.db.models import Q
 from django.contrib.auth.models import User, Group
-from core.apps.backoffice.models import Category, Product, Order, SupplyEntry
+from core.apps.backoffice.models import Category, Product, Order, SupplyEntry, BarberProfile
 
 
 class SupplyEntryFilter(django_filters.FilterSet):
@@ -198,3 +198,33 @@ class GroupFilter(django_filters.FilterSet):
     class Meta:
         model = Group
         fields = ["name"]
+
+
+class BarberProfileFilter(django_filters.FilterSet):
+    nickname = django_filters.CharFilter(
+        lookup_expr="icontains",
+        label="Apodo",
+        widget=forms.TextInput(
+            attrs={"class": "form-control", "placeholder": "Buscar por apodo..."}
+        ),
+    )
+    is_active = django_filters.BooleanFilter(
+        label="Estado",
+        widget=forms.Select(
+            attrs={"class": "form-select"},
+            choices=[("", "Todos"), ("true", "Disponible"), ("false", "No disponible")],
+        ),
+    )
+
+    def __init__(self, data=None, queryset=None, *, request=None, prefix=None):
+        if data is None:
+            data = {"is_active": "true"}
+        else:
+            data = data.copy()
+            if "is_active" not in data:
+                data["is_active"] = "true"
+        super().__init__(data, queryset, request=request, prefix=prefix)
+
+    class Meta:
+        model = BarberProfile
+        fields = ["nickname", "is_active"]

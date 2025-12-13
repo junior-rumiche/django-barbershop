@@ -32,6 +32,11 @@ from core.apps.backoffice.views.supplies import (
     SupplyCreateView,
     SupplyUpdateView,
 )
+from core.apps.backoffice.views.barbers import (
+    BarberListView,
+    BarberCreateView,
+    BarberUpdateView,
+)
 
 
 urlpatterns = [
@@ -74,4 +79,9 @@ urlpatterns = [
     path("supplies/", SupplyListView.as_view(), name="supply_list"),
     path("supplies/add/", SupplyCreateView.as_view(), name="supply_add"),
     path("supplies/<int:pk>/edit/", SupplyUpdateView.as_view(), name="supply_edit"),
+
+    # Barbers URLs
+    path("barbers/", BarberListView.as_view(), name="barber_list"),
+    path("barbers/add/", BarberCreateView.as_view(), name="barber_add"),
+    path("barbers/<int:pk>/edit/", BarberUpdateView.as_view(), name="barber_edit"),
 ]

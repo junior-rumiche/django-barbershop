@@ -1,0 +1,183 @@
+{% extends 'base/backoffice/base.html' %}
+{% load static %}
+
+{% block styles %}
+<link rel="stylesheet" href="{% static 'backoffice/extensions/sweetalert2/sweetalert2.min.css' %}">
+{% endblock %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="page-heading">
+   <div class="page-title">
+      <div class="row">
+         <div class="col-12 col-md-6 order-md-1 order-last">
+            <h3>{{ page_title }}</h3>
+            <p class="text-subtitle text-muted">Administra los perfiles de barberos.</p>
+         </div>
+         <div class="col-12 col-md-6 order-md-2 order-first">
+            <nav aria-label="breadcrumb" class="breadcrumb-header float-start float-lg-end">
+               <ol class="breadcrumb">
+                  <li class="breadcrumb-item"><a href="{% url 'backoffice:dashboard' %}">Dashboard</a></li>
+                  <li class="breadcrumb-item active" aria-current="page">{{ page_title }}</li>
+               </ol>
+            </nav>
+         </div>
+      </div>
+   </div>
+
+   <section class="section">
+      <div class="card">
+         <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+               <h4 class="card-title">Filtros</h4>
+               {% if perms.backoffice.add_barberprofile %}
+               <a href="{% url 'backoffice:barber_add' %}" class="btn btn-primary">
+                  <i class="bi bi-plus-lg"></i> Nuevo
+               </a>
+               {% endif %}
+            </div>
+            <form method="get" class="row g-3">
+               <div class="col-md-5">
+                  <label for="{{ filter.form.nickname.id_for_label }}" class="form-label">
+                     {{ filter.form.nickname.label }}
+                  </label>
+                  {{ filter.form.nickname }}
+               </div>
+               <div class="col-md-5">
+                  <label for="{{ filter.form.is_active.id_for_label }}" class="form-label">
+                     {{ filter.form.is_active.label }}
+                  </label>
+                  {{ filter.form.is_active }}
+               </div>
+               <div class="col-md-2 d-flex align-items-end">
+                  <button type="submit" class="btn btn-primary w-100">
+                     <i class="bi bi-funnel"></i> Filtrar
+                  </button>
+               </div>
+            </form>
+         </div>
+         <div class="card-body">
+            <div class="table-responsive">
+               <table class="table table-striped">
+                  <thead>
+                     <tr>
+                        <th>No.</th>
+                        <th>Barbero</th>
+                        <th>Usuario</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                     </tr>
+                  </thead>
+                  <tbody>
+                     {% for barber in barbers %}
+                     <tr>
+                        <td>
+                           {% if page_obj %}
+                           {{ page_obj.start_index|add:forloop.counter0 }}
+                           {% else %}
+                           {{ forloop.counter }}
+                           {% endif %}
+                        </td>
+                        <td>
+                           <div class="d-flex align-items-center">
+                              <div class="avatar avatar-md bg-primary me-3">
+                                 {% if barber.photo %}
+                                 <img src="{{ barber.photo.url }}" alt="{{ barber.nickname }}">
+                                 {% else %}
+                                 <span class="avatar-content text-white">{{ barber.nickname|slice:":2"|upper }}</span>
+                                 {% endif %}
+                              </div>
+                              <p class="font-bold mb-0">{{ barber.nickname }}</p>
+                           </div>
+                        </td>
+                        <td>{{ barber.user.username }}</td>
+                        <td>
+                           {% if barber.is_active %}
+                           <span class="badge bg-success">Disponible</span>
+                           {% else %}
+                           <span class="badge bg-danger">No disponible</span>
+                           {% endif %}
+                        </td>
+                        <td>
+                           <div class="d-flex gap-2">
+                              {% if perms.backoffice.change_barberprofile %}
+                              <a href="{% url 'backoffice:barber_edit' barber.pk %}" class="btn btn-sm btn-primary"
+                                 data-bs-toggle="tooltip" data-bs-placement="top" title="Editar">
+                                 <i class="bi bi-pencil"></i>
+                              </a>
+                              {% endif %}
+                              {% if perms.backoffice.delete_barberprofile %}
+                              <button type="button" class="btn btn-sm btn-danger"
+                                 onclick="delete_barber({{ barber.pk }}, '{{ barber.nickname|escapejs }}')"
+                                 data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                                 <i class="bi bi-trash"></i>
+                              </button>
+                              {% endif %}
+                           </div>
+                        </td>
+                     </tr>
+                     {% empty %}
+                     <tr>
+                        <td colspan="6" class="text-center">No hay barberos registrados.</td>
+                     </tr>
+                     {% endfor %}
+                  </tbody>
+               </table>
+            </div>
+
+            <!-- Pagination -->
+            {% include 'backoffice/includes/pagination.html' %}
+         </div>
+      </div>
+   </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'backoffice/extensions/sweetalert2/sweetalert2.min.js' %}"></script>
+<script>
+   async function delete_barber(id, name) {
+      const result = await Swal.fire({
+         title: '¿Estás seguro?',
+         text: `Eliminarás al barbero "${name}". Esta acción no se puede deshacer.`,
+         icon: 'warning',
+         showCancelButton: true,
+         confirmButtonColor: '#dc3545',
+         cancelButtonColor: '#6c757d',
+         confirmButtonText: 'Sí, eliminar',
+         cancelButtonText: 'Cancelar'
+      });
+
+      if (result.isConfirmed) {
+         try {
+            const csrf_token = get_cookie('csrftoken');
+            const response = await fetch(`/api/barbers/${id}/`, {
+               method: 'DELETE',
+               headers: {
+                  'X-CSRFToken': csrf_token,
+                  'Content-Type': 'application/json'
+               },
+            });
+
+            if (response.ok) {
+               await Swal.fire(
+                  '¡Eliminado!',
+                  'El barbero ha sido eliminado.',
+                  'success'
+               );
+               location.reload();
+               return;
+            }
+            throw new Error('Hubo un problema al eliminar el barbero.');
+         } catch (error) {
+            await Swal.fire(
+               'Error',
+               error.message,
+               'error'
+            );
+         }
+      }
+   }
+</script>
+{% endblock %}

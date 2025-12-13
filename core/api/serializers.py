@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User, Group
-from core.apps.backoffice.models import Category, Product, Order, OrderItem, SupplyEntry
+from core.apps.backoffice.models import Category, Product, Order, OrderItem, SupplyEntry, BarberProfile
 
 
 class SupplyEntrySerializer(serializers.ModelSerializer):
@@ -77,3 +77,11 @@ class GroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = Group
         fields = ["id", "name"]
+
+
+class BarberProfileSerializer(serializers.ModelSerializer):
+    user_name = serializers.CharField(source="user.get_full_name", read_only=True)
+
+    class Meta:
+        model = BarberProfile
+        fields = "__all__"

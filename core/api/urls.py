@@ -7,6 +7,7 @@ from core.api.views import (
     ProductViewSet,
     OrderViewSet,
     SupplyEntryViewSet,
+    BarberProfileViewSet,
 )
 
 router = DefaultRouter()
@@ -16,6 +17,7 @@ router.register(r'categories', CategoryViewSet)
 router.register(r'products', ProductViewSet)
 router.register(r'orders', OrderViewSet)
 router.register(r'supplies', SupplyEntryViewSet)
+router.register(r'barbers', BarberProfileViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),

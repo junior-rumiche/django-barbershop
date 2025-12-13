@@ -242,3 +242,23 @@ class SupplyEntry(models.Model):
                 super().save(*args, **kwargs)
         else:
             super().save(*args, **kwargs)
+
+
+class BarberProfile(models.Model):
+    """
+    Convierte a un User en 'Barbero' con datos públicos.
+    """
+
+    user = models.OneToOneField(
+        User, on_delete=models.CASCADE, related_name="barber_profile"
+    )
+    nickname = models.CharField(max_length=50, verbose_name="Apodo")
+    photo = models.ImageField(upload_to="barbers/", blank=True, null=True)
+    is_active = models.BooleanField(default=True, verbose_name="Disponible en Web")
+
+    class Meta:
+        verbose_name = "Perfil de Barbero"
+        verbose_name_plural = "Perfiles de Barberos"
+
+    def __str__(self):
+        return self.nickname
