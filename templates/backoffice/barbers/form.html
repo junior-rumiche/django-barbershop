@@ -4,7 +4,7 @@
 {% block styles %}
 <link rel="stylesheet" href="{% static 'backoffice/extensions/filepond/filepond.css' %}">
 <link rel="stylesheet" href="{% static 'backoffice/extensions/filepond-plugin-image-preview/filepond-plugin-image-preview.css' %}">
-<link rel="stylesheet" href="{% static 'backoffice/extensions/toastify-js/src/toastify.css' %}">
+<link rel="stylesheet" href="{% static 'backoffice/extensions/sweetalert2/sweetalert2.min.css' %}">
 <link rel="stylesheet" href="{% static 'backoffice/extensions/flatpickr/flatpickr.min.css' %}">
 <style>
     .filepond--root {
@@ -106,7 +106,12 @@
                                         </div>
 
                                         <div class="col-12 mt-4">
-                                            <h4 class="mb-3">Horarios de Trabajo</h4>
+                                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                                <h4 class="mb-0">Horarios de Trabajo</h4>
+                                                <button type="button" id="apply-all-btn" class="btn btn-outline-primary btn-sm">
+                                                    <i class="bi bi-arrows-expand me-2"></i>Aplicar 1er día a todos
+                                                </button>
+                                            </div>
                                             {% if schedules.non_form_errors %}
                                             <div class="alert alert-danger">
                                                 {{ schedules.non_form_errors }}
@@ -204,7 +209,7 @@
 {% block scripts %}
 <script src="{% static 'backoffice/extensions/filepond-plugin-image-preview/filepond-plugin-image-preview.min.js' %}"></script>
 <script src="{% static 'backoffice/extensions/filepond/filepond.js' %}"></script>
-<script src="{% static 'backoffice/extensions/toastify-js/src/toastify.js' %}"></script>
+<script src="{% static 'backoffice/extensions/sweetalert2/sweetalert2.min.js' %}"></script>
 <script src="{% static 'backoffice/extensions/flatpickr/flatpickr.min.js' %}"></script>
 <script src="{% static 'backoffice/extensions/flatpickr/l10n/es.js' %}"></script>
 <script>
@@ -237,9 +242,70 @@
             dateFormat: "H:i", 
             altInput: true,    
             altFormat: "h:i K", 
-            time_24hr: false,
-            locale: "es",
-            allowInput: true
+            allowInput: true,
+            onReady: function(selected_dates, date_str, instance) {
+                // Open calendar on focus
+                instance._input.addEventListener('focus', function() {
+                    instance.open();
+                });
+            }
+        });
+
+        // Apply All Logic
+        document.getElementById('apply-all-btn').addEventListener('click', function() {
+            // Get values from the first row (index 0)
+            const first_start = document.getElementById('id_schedules-0-start_hour').value;
+            const first_end = document.getElementById('id_schedules-0-end_hour').value;
+            const first_lunch_start = document.getElementById('id_schedules-0-lunch_start').value;
+            const first_lunch_end = document.getElementById('id_schedules-0-lunch_end').value;
+
+            // Iterate over the other rows
+            const total_forms = document.getElementById('id_schedules-TOTAL_FORMS').value;
+            
+            for (let i = 1; i < total_forms; i++) {
+                const start_input = document.getElementById(`id_schedules-${i}-start_hour`);
+                const end_input = document.getElementById(`id_schedules-${i}-end_hour`);
+                const lunch_start_input = document.getElementById(`id_schedules-${i}-lunch_start`);
+                const lunch_end_input = document.getElementById(`id_schedules-${i}-lunch_end`);
+                const day_input = document.getElementById(`id_schedules-${i}-day_of_week`);
+
+                if (start_input) {
+                    start_input.value = first_start;
+                    end_input.value = first_end;
+                    lunch_start_input.value = first_lunch_start;
+                    lunch_end_input.value = first_lunch_end;
+                    
+                    // Auto-set the day of the week sequentially
+                    // i=1 -> Tuesday (1), i=2 -> Wednesday (2), etc.
+                    // Only if i <= 6 (Sunday)
+                    if (day_input && i <= 6) {
+                        day_input.value = i;
+                    }
+                    
+                    // Update Flatpickr instance if exists
+                    if (start_input._flatpickr) start_input._flatpickr.setDate(first_start, true);
+                    if (end_input._flatpickr) end_input._flatpickr.setDate(first_end, true);
+                    if (lunch_start_input._flatpickr) lunch_start_input._flatpickr.setDate(first_lunch_start, true);
+                    if (lunch_end_input._flatpickr) lunch_end_input._flatpickr.setDate(first_lunch_end, true);
+                }
+            }
+            
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                    toast.addEventListener('mouseenter', Swal.stopTimer)
+                    toast.addEventListener('mouseleave', Swal.resumeTimer)
+                }
+            })
+
+            Toast.fire({
+                icon: 'success',
+                title: 'Horario del primer día aplicado a todos.'
+            })
         });
     });
 </script>

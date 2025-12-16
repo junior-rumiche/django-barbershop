@@ -1,9 +1,16 @@
 from django.urls import reverse_lazy
+from django.http import HttpResponseRedirect
 from django.views.generic import CreateView, UpdateView
 from django_filters.views import FilterView
+from django.db import transaction
 from core.mixins import BasePageMixin
 from core.apps.backoffice.models import BarberProfile
-from core.apps.backoffice.forms import BarberProfileForm, WorkScheduleFormSet
+from core.apps.backoffice.models import BarberProfile
+from core.apps.backoffice.forms import (
+    BarberProfileForm,
+    WorkScheduleFormSet,
+    WorkScheduleUpdateFormSet,
+)
 from core.apps.backoffice.filters import BarberProfileFilter
 
 
@@ -39,14 +46,15 @@ class BarberCreateView(BasePageMixin, CreateView):
     def form_valid(self, form):
         context = self.get_context_data()
         schedules = context["schedules"]
-        self.object = form.save()
+        
         if schedules.is_valid():
-            schedules.instance = self.object
-            schedules.save()
+            with transaction.atomic():
+                self.object = form.save()
+                schedules.instance = self.object
+                schedules.save()
+            return HttpResponseRedirect(self.get_success_url())
         else:
-            # If formset is invalid, re-render form with errors
             return self.render_to_response(self.get_context_data(form=form))
-        return super().form_valid(form)
 
 
 class BarberUpdateView(BasePageMixin, UpdateView):
@@ -60,18 +68,20 @@ class BarberUpdateView(BasePageMixin, UpdateView):
     def get_context_data(self, **kwargs):
         data = super().get_context_data(**kwargs)
         if self.request.POST:
-            data["schedules"] = WorkScheduleFormSet(self.request.POST, instance=self.object)
+            data["schedules"] = WorkScheduleUpdateFormSet(self.request.POST, instance=self.object)
         else:
-            data["schedules"] = WorkScheduleFormSet(instance=self.object)
+            data["schedules"] = WorkScheduleUpdateFormSet(instance=self.object)
         return data
 
     def form_valid(self, form):
         context = self.get_context_data()
         schedules = context["schedules"]
-        self.object = form.save()
+        
         if schedules.is_valid():
-            schedules.instance = self.object
-            schedules.save()
+            with transaction.atomic():
+                self.object = form.save()
+                schedules.instance = self.object
+                schedules.save()
+            return super(UpdateView, self).form_valid(form)
         else:
-             return self.render_to_response(self.get_context_data(form=form))
-        return super().form_valid(form)
+            return self.render_to_response(self.get_context_data(form=form))

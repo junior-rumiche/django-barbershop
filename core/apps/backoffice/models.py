@@ -252,7 +252,7 @@ class BarberProfile(models.Model):
     user = models.OneToOneField(
         User, on_delete=models.CASCADE, related_name="barber_profile"
     )
-    nickname = models.CharField(max_length=50, verbose_name="Apodo")
+    nickname = models.CharField(max_length=50, verbose_name="Apodo", blank=True, null=True)
     photo = models.ImageField(upload_to="barbers/", blank=True, null=True)
     is_active = models.BooleanField(default=True, verbose_name="Disponible en Web")
 
@@ -261,7 +261,9 @@ class BarberProfile(models.Model):
         verbose_name_plural = "Perfiles de Barberos"
 
     def __str__(self):
-        return self.nickname
+        if self.nickname:
+             return self.nickname
+        return self.user.get_full_name() or self.user.username
 
 
 class WorkSchedule(models.Model):
@@ -295,4 +297,4 @@ class WorkSchedule(models.Model):
         ordering = ["day_of_week"]
 
     def __str__(self):
-        return f"{self.barber.nickname} - {self.get_day_of_week_display()}"
+        return f"{self.barber} - {self.get_day_of_week_display()}"

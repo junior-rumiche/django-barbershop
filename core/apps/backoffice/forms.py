@@ -400,6 +400,10 @@ class WorkScheduleForm(forms.ModelForm):
             "lunch_start",
             "lunch_end",
         ]
+        field_classes = {
+            'lunch_start': forms.TimeField,
+            'lunch_end': forms.TimeField,
+        }
         widgets = {
             "day_of_week": forms.Select(attrs={"class": "form-select"}),
             "start_hour": forms.TextInput(
@@ -446,6 +450,9 @@ class WorkScheduleForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields['lunch_start'].required = False
+        self.fields['lunch_end'].required = False
+        
         for field_name in self.errors:
             if field_name in self.fields:
                 current_class = self.fields[field_name].widget.attrs.get("class", "")
@@ -479,6 +486,17 @@ WorkScheduleFormSet = forms.inlineformset_factory(
     form=WorkScheduleForm,
     formset=BaseWorkScheduleFormSet,
     extra=7, 
+    can_delete=True,
+)
+
+
+WorkScheduleUpdateFormSet = forms.inlineformset_factory(
+    BarberProfile,
+    WorkSchedule,
+    form=WorkScheduleForm,
+    formset=BaseWorkScheduleFormSet,
+    extra=7,
+    max_num=7,
     can_delete=True,
 )
 
