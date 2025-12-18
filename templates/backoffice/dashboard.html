@@ -356,6 +356,12 @@
 
 {% block scripts %}
 <script src="{% static 'backoffice/extensions/apexcharts/apexcharts.min.js' %}"></script>
+
+{{ chart_sales|json_script:"sales-data-json" }}
+{{ chart_peak_hours|json_script:"peak-data-json" }}
+{{ chart_mix|json_script:"mix-data-json" }}
+{{ chart_status|json_script:"status-data-json" }}
+
 <script>
     /**
      * -------------------------------------------------------------------------
@@ -367,10 +373,10 @@
 
     /**
      * Data for the Sales Trend Chart (Last 7 days).
-     * Parsed from Django context.
+     * Parsed from Django context via json_script.
      * @type {Object}
      */
-    var sales_data = JSON.parse('{{ chart_sales|safe }}');
+    var sales_data = JSON.parse(document.getElementById('sales-data-json').textContent);
 
     /**
      * Configuration options for the Sales Trend Area Chart.
@@ -430,7 +436,7 @@
      * Represents transaction counts per hour of the day (00:00 - 23:00).
      * @type {Object}
      */
-    var peak_data = JSON.parse('{{ chart_peak_hours|safe }}');
+    var peak_data = JSON.parse(document.getElementById('peak-data-json').textContent);
 
     /**
      * Configuration options for the Peak Hours Bar Chart.
@@ -479,7 +485,7 @@
      * Data for the Product vs Service Mix Chart.
      * @type {Object}
      */
-    var mix_data = JSON.parse('{{ chart_mix|safe }}');
+    var mix_data = JSON.parse(document.getElementById('mix-data-json').textContent);
 
     /**
      * Configuration options for the Mix Donut Chart.
@@ -521,7 +527,7 @@
      * Data for the Order Status Chart.
      * @type {Object}
      */
-    var status_data = JSON.parse('{{ chart_status|safe }}');
+    var status_data = JSON.parse(document.getElementById('status-data-json').textContent);
 
     /**
      * Configuration options for the Status Pie Chart.

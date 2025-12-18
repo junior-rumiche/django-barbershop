@@ -78,10 +78,10 @@ class DashboardView(BasePageMixin, TemplateView):
             sales_data.append(float(daily_sales))
             dates.append(date.strftime("%d/%m"))
 
-        context['chart_sales'] = json.dumps({
+        context['chart_sales'] = {
             'series': [{'name': 'Ventas', 'data': sales_data}],
             'categories': dates
-        })
+        }
         
         # --- Chart Data: Services vs Products (This Month) ---
         services_sales = OrderItem.objects.filter(
@@ -98,10 +98,10 @@ class DashboardView(BasePageMixin, TemplateView):
             product__is_service=False
         ).aggregate(Sum('subtotal'))['subtotal__sum'] or 0
         
-        context['chart_mix'] = json.dumps({
+        context['chart_mix'] = {
             'series': [float(services_sales), float(products_sales)],
             'labels': ['Servicios', 'Productos']
-        })
+        }
         
         # --- Chart Data: Peak Hours (Activity Heatmap equivalent) ---
         # Initialize 24 hours with 0
@@ -115,10 +115,10 @@ class DashboardView(BasePageMixin, TemplateView):
             if item['hour'] is not None and 0 <= item['hour'] < 24:
                 hours_data[item['hour']] = item['count']
 
-        context['chart_peak_hours'] = json.dumps({
+        context['chart_peak_hours'] = {
             'series': [{'name': 'Transacciones', 'data': hours_data}],
             'categories': [f"{h:02d}:00" for h in range(24)]
-        })
+        }
 
         # --- Chart Data: Order Status Distribution ---
         status_counts = Order.objects.values('status').annotate(count=Count('id'))
@@ -131,10 +131,10 @@ class DashboardView(BasePageMixin, TemplateView):
             status_map.get('CANCELED', 0)
         ]
         
-        context['chart_status'] = json.dumps({
+        context['chart_status'] = {
             'series': status_series,
             'labels': ['Pagado', 'Pendiente', 'Anulado']
-        })
+        }
 
         # --- Recent Orders ---
         context['recent_orders'] = Order.objects.select_related('created_by').order_by('-created_at')[:5]
