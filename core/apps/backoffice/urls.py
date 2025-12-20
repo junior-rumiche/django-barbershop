@@ -42,6 +42,8 @@ from core.apps.backoffice.views.appointments import (
     AppointmentListView,
     AppointmentCreateView,
     AppointmentUpdateView,
+    AppointmentCalendarView,
+    AppointmentJSONView,
 )
 from core.apps.backoffice.views.profile import ProfileUpdateView
 
@@ -97,6 +99,8 @@ urlpatterns = [
 
     # Appointments URLs
     path("appointments/", AppointmentListView.as_view(), name="appointment_list"),
+    path("appointments/calendar/", AppointmentCalendarView.as_view(), name="appointment_calendar"),
+    path("api/appointments/events/", AppointmentJSONView.as_view(), name="appointment_events"),
     path("appointments/add/", AppointmentCreateView.as_view(), name="appointment_add"),
     path("appointments/<int:pk>/edit/", AppointmentUpdateView.as_view(), name="appointment_edit"),
 ]

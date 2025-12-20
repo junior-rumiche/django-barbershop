@@ -30,14 +30,19 @@
    <section class="section">
       <div class="card">
          <div class="card-header">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-               <h4 class="card-title">Filtros</h4>
-               {% if perms.backoffice.add_appointment %}
-               <a href="{% url 'backoffice:appointment_add' %}" class="btn btn-primary">
-                  <i class="bi bi-plus-lg"></i> Nueva Cita
-               </a>
-               {% endif %}
-            </div>
+             <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center gap-3 mb-3 w-100">
+                <h4 class="card-title mb-0">Filtros</h4>
+                <div class="d-flex gap-2 w-100 w-auto ms-md-auto">
+                    <a href="{% url 'backoffice:appointment_calendar' %}" class="btn btn-secondary flex-fill flex-md-grow-0">
+                       <i class="bi bi-calendar3"></i> Ver Calendario
+                    </a>
+                    {% if perms.backoffice.add_appointment %}
+                    <a href="{% url 'backoffice:appointment_add' %}" class="btn btn-primary flex-fill flex-md-grow-0">
+                       <i class="bi bi-plus-lg"></i> Nueva Cita
+                    </a>
+                    {% endif %}
+                </div>
+             </div>
             <form method="get" class="row g-3">
                <div class="col-12 col-md-6 col-lg-3">
                   <label for="{{ filter.form.client_name.id_for_label }}" class="form-label">
@@ -90,13 +95,13 @@
                      {% for appointment in appointments %}
                      <tr>
                         <td>{{ appointment.date|date:"d/m/Y" }}</td>
-                        <td>{{ appointment.start_time|time:"H:i" }} - {{ appointment.end_time|time:"H:i" }}</td>
+                        <td>{{ appointment.start_time|time:"h:i A" }} - {{ appointment.end_time|time:"h:i A" }}</td>
                         <td>
                             <div>{{ appointment.client_name }}</div>
                             <small class="text-muted">{{ appointment.client_phone }}</small>
                         </td>
                         <td>{{ appointment.barber }}</td>
-                        <td>${{ appointment.total_amount }}</td>
+                        <td>S/.{{ appointment.total_amount }}</td>
                         <td>
                             {% if appointment.status == 'REQUESTED' %}
                             <span class="badge bg-warning text-dark">Solicitada</span>
@@ -110,6 +115,30 @@
                         </td>
                         <td>
                            <div class="d-flex gap-2">
+                              {% if appointment.client_phone %}
+                                  {% if appointment.status == 'REQUESTED' %}
+                                  <a href="https://wa.me/51{{ appointment.client_phone|cut:' ' }}?text=Estimado(a) {{ appointment.client_name }}, para confirmar su cita del {{ appointment.date }} a las {{ appointment.start_time|time:'h:i A' }}, es necesario realizar un pago por adelantado. ¿Desea proceder?" 
+                                     target="_blank" class="btn btn-sm btn-success" data-bs-toggle="tooltip" title="Solicitar Pago">
+                                     <i class="bi bi-whatsapp"></i>
+                                  </a>
+                                  {% elif appointment.status == 'CONFIRMED' %}
+                                  <a href="https://wa.me/51{{ appointment.client_phone|cut:' ' }}?text=Hola {{ appointment.client_name }}, le recordamos su cita confirmada para el {{ appointment.date }} a las {{ appointment.start_time|time:'h:i A' }}. ¡Lo esperamos!" 
+                                     target="_blank" class="btn btn-sm btn-success" data-bs-toggle="tooltip" title="Enviar Recordatorio">
+                                     <i class="bi bi-whatsapp"></i>
+                                  </a>
+                                  {% elif appointment.status == 'COMPLETED' %}
+                                  <a href="https://wa.me/51{{ appointment.client_phone|cut:' ' }}?text=Hola {{ appointment.client_name }}, gracias por su preferencia. ¡Esperamos verle pronto!" 
+                                     target="_blank" class="btn btn-sm btn-success" data-bs-toggle="tooltip" title="Agradecer">
+                                     <i class="bi bi-whatsapp"></i>
+                                  </a>
+                                  {% elif appointment.status == 'CANCELED' %}
+                                  <a href="https://wa.me/51{{ appointment.client_phone|cut:' ' }}?text=Hola {{ appointment.client_name }}, confirmamos la cancelación de su cita del {{ appointment.date }}. Saludos." 
+                                     target="_blank" class="btn btn-sm btn-success" data-bs-toggle="tooltip" title="Notificar Cancelación">
+                                     <i class="bi bi-whatsapp"></i>
+                                  </a>
+                                  {% endif %}
+                              {% endif %}
+
                               {% if perms.backoffice.change_appointment %}
                               <a href="{% url 'backoffice:appointment_edit' appointment.pk %}" class="btn btn-sm btn-primary"
                                  data-bs-toggle="tooltip" data-bs-placement="top" title="Editar">

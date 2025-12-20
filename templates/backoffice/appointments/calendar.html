@@ -1,0 +1,301 @@
+{% extends 'base/backoffice/base.html' %}
+{% load static %}
+
+{% block styles %}
+<!-- FullCalendar CSS -->
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
+<style>
+    /* Aspect ratio for the calendar container */
+    #calendar-container {
+        position: relative;
+        z-index: 1;
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 8px;
+    }
+    
+    .fc-event {
+        cursor: pointer;
+    }
+    
+    /* Custom tooltip style */
+    .fc-tooltip {
+        position: absolute;
+        z-index: 9999;
+        padding: 5px 10px;
+        background-color: rgba(0, 0, 0, 0.85);
+        color: #fff;
+        border-radius: 4px;
+        font-size: 12px;
+        pointer-events: none;
+    }
+    /* Custom Event Content */
+    .fc-event-content-custom {
+        padding: 6px 8px;
+        line-height: 1.3;
+        font-family: 'Inter', sans-serif;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        white-space: normal !important;
+    }
+    .event-time {
+        font-weight: 800;
+        font-size: 0.9em;
+        opacity: 0.9;
+    }
+    .event-title {
+        font-weight: 600;
+        font-size: 0.95em;
+        margin-bottom: 2px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+    }
+    .event-details {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 4px;
+        font-size: 0.85em;
+    }
+    .event-amount {
+        font-weight: 700;
+        opacity: 0.9;
+    }
+    .fc-daygrid-event {
+        white-space: normal !important; 
+        align-items: stretch !important; /* Allow proper height */
+    }
+    
+    /* Premium Calendar Styling */
+    .fc-theme-standard .fc-scrollgrid {
+        border: 1px solid #e0e0e0;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    .fc-col-header-cell {
+        background-color: #f8f9fa;
+        padding: 10px 0;
+        font-weight: 600;
+        color: #495057;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        border-bottom: 2px solid #e9ecef;
+    }
+    
+    /* Events styling */
+    .fc-event {
+        border: none !important;
+        border-radius: 6px !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.08); /* Subtle shadow */
+        transition: transform 0.1s ease, box-shadow 0.1s ease;
+        margin-bottom: 2px !important;
+    }
+    .fc-event:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.12);
+        z-index: 5;
+    }
+    .fc-daygrid-event {
+        white-space: normal !important; 
+        align-items: center !important; 
+    }
+    
+    /* Toolbar styling */
+    .fc-header-toolbar {
+        margin-bottom: 1.5em !important;
+    }
+    .fc-toolbar-title {
+        font-weight: 700;
+        color: #2c3e50;
+        font-size: 1.5rem !important;
+    }
+    .fc-button-primary {
+        background-color: #435ebe !important; /* Mazer primary */
+        border-color: #435ebe !important;
+        border-radius: 6px !important;
+        font-weight: 500;
+        padding: 0.4em 0.8em;
+        transition: background-color 0.2s;
+    }
+    .fc-button-primary:hover {
+        background-color: #364b98 !important; /* Darker Mazer */
+        border-color: #364b98 !important;
+    }
+    .fc-button-active {
+        background-color: #25396f !important;
+    }
+    
+    /* Today highlight */
+    .fc-day-today {
+        background-color: rgba(67, 94, 190, 0.05) !important; /* Light Mazer tint */
+    }
+
+    /* Responsive FullCalendar */
+    @media (max-width: 768px) {
+        .fc-header-toolbar {
+            flex-direction: column;
+            gap: 10px;
+        }
+        .fc-toolbar-chunk {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+        }
+        .fc-toolbar-title {
+            font-size: 1.25em !important;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="page-heading">
+    <div class="page-title">
+        <div class="row">
+            <div class="col-12 col-md-6 order-md-1 order-last">
+                <h3>{{ page_title }}</h3>
+                <p class="text-subtitle text-muted">Vista mensual y semanal de citas.</p>
+            </div>
+            <div class="col-12 col-md-6 order-md-2 order-first">
+                <nav aria-label="breadcrumb" class="breadcrumb-header float-start float-lg-end">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{% url 'backoffice:dashboard' %}">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'backoffice:appointment_list' %}">Citas</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Calendario</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <section class="section">
+        <div class="card">
+            <div class="card-header d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
+                <h4 class="card-title mb-0">Calendario</h4>
+                <div class="d-flex gap-2 w-100 w-md-auto">
+                     <a href="{% url 'backoffice:appointment_list' %}" class="btn btn-secondary flex-fill flex-md-grow-0">
+                        <i class="bi bi-list-ul"></i> Vista de Lista
+                     </a>
+                     {% if perms.backoffice.add_appointment %}
+                     <a href="{% url 'backoffice:appointment_add' %}" class="btn btn-primary flex-fill flex-md-grow-0">
+                        <i class="bi bi-plus-lg"></i> Nueva Cita
+                     </a>
+                     {% endif %}
+                </div>
+            </div>
+            <div class="card-body">
+                <div id='calendar'></div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var calendarEl = document.getElementById('calendar');
+        var isMobile = window.innerWidth < 768;
+        
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: isMobile ? 'timeGridDay' : 'dayGridMonth',
+            locale: 'es',
+            firstDay: 1,
+            headerToolbar: {
+                left: isMobile ? 'prev,next' : 'prev,next today',
+                center: 'title',
+                right: isMobile ? 'timeGridDay,listDay' : 'dayGridMonth,timeGridWeek,timeGridDay'
+            },
+            buttonText: {
+                today: 'Hoy',
+                month: 'Mes',
+                week: 'Semana',
+                day: 'Día',
+                list: 'Lista'
+            },
+            eventTimeFormat: {
+                hour: '2-digit',
+                minute: '2-digit',
+                meridiem: 'short'
+            },
+            events: '{% url "backoffice:appointment_events" %}',
+            eventContent: function(arg) {
+                // Formatter for time
+                let date = arg.event.start;
+                let hours = date.getHours();
+                let minutes = date.getMinutes();
+                let ampm = hours >= 12 ? 'pm' : 'am';
+                hours = hours % 12;
+                hours = hours ? hours : 12;
+                minutes = minutes < 10 ? '0' + minutes : minutes;
+                let timeText = hours + ':' + minutes + ' ' + ampm;
+
+                let title = arg.event.title; 
+                let rawStatus = arg.event.extendedProps.status; // "Confirmada (Cliente Contacted)"
+                let amount = arg.event.extendedProps.amount;
+
+                // Shorten status for display
+                let shortStatus = rawStatus.split(' ')[0]; // Take first word "Confirmada", "Solicitud" etc.
+                if (shortStatus.length > 12) shortStatus = shortStatus.substring(0, 10) + '..';
+
+                // Create content
+                let content = document.createElement('div');
+                content.classList.add('fc-event-content-custom');
+                
+                content.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="event-time badge bg-white text-primary">${timeText}</span>
+                        <span class="event-amount text-white small" style="font-weight:600;">S/.${amount}</span>
+                    </div>
+                    <div class="event-title text-white mb-1" style="font-size:0.95em; line-height:1.2;">
+                        ${title}
+                    </div>
+                    <div class="event-status">
+                        <span class="badge" style="background: rgba(255,255,255,0.2); font-weight:normal; font-size:0.75em;">${shortStatus}</span>
+                    </div>
+                `;
+                
+                return { domNodes: [content] }
+            },
+            eventDidMount: function(info) {
+                var status = info.event.extendedProps.status;
+                var phone = info.event.extendedProps.phone;
+                var amount = info.event.extendedProps.amount;
+                info.el.title = `Cliente: ${info.event.title}\nEstado: ${status}\nTel: ${phone}\nTotal: S/.${amount}`;
+                
+                // Keep styles neutral so our innerHTML controls colors
+                info.el.style.border = 'none';
+                info.el.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';
+            },
+            eventClick: function(info) {
+                var editUrl = "{% url 'backoffice:appointment_edit' 0 %}".replace('0', info.event.id);
+                window.location.href = editUrl;
+            },
+            windowResize: function(view) {
+                if (window.innerWidth < 768) {
+                    calendar.changeView('timeGridDay');
+                    calendar.setOption('headerToolbar', {
+                        left: 'prev,next',
+                        center: 'title',
+                        right: 'timeGridDay,listDay'
+                    });
+                } else {
+                    calendar.changeView('dayGridMonth');
+                     calendar.setOption('headerToolbar', {
+                        left: 'prev,next today',
+                        center: 'title',
+                        right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                    });
+                }
+            }
+        });
+        calendar.render();
+    });
+</script>
+{% endblock %}

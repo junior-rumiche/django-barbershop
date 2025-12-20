@@ -164,30 +164,164 @@
 <script src="{% static 'backoffice/extensions/flatpickr/flatpickr.min.js' %}"></script>
 <script src="{% static 'backoffice/extensions/choices.js/public/assets/scripts/choices.js' %}"></script>
 <script>
+    /**
+     * Initialize date pickers for general date fields
+     */
     flatpickr(".flatpickr-date", {
         dateFormat: "Y-m-d",
-        allowInput: true
+        allowInput: true,
+        {% if not form.instance.pk %}
+        minDate: "today",
+        {% endif %}
     });
-    flatpickr(".flatpickr-time", {
+
+    /**
+     * Initialize End Time Picker
+     * Configured for 12-hour format with AM/PM
+     * @type {object}
+     */
+    const end_picker = flatpickr("#id_end_time", {
         enableTime: true,
         noCalendar: true,
-        dateFormat: "H:i",
-        time_24hr: true,
+        dateFormat: "h:i K", // Send "02:00 PM" to server
+        time_24hr: false,
         allowInput: true
     });
 
-    let choices = document.querySelectorAll('.choices');
-    let initChoice;
-    for (let i = 0; i < choices.length; i++) {
-        if (choices[i].classList.contains("multiple-remove")) {
-            initChoice = new Choices(choices[i], {
+    /**
+     * Initialize Start Time Picker
+     * Configured for 12-hour format. Updates End Time minTime and totals on change.
+     * @type {object}
+     */
+    const start_picker = flatpickr("#id_start_time", {
+        enableTime: true,
+        noCalendar: true,
+        dateFormat: "h:i K", // Send "02:00 PM" to server
+        time_24hr: false,
+        allowInput: true,
+        onChange: function(selected_dates, date_str, instance) {
+            // Update end time minTime
+            if (end_picker) {
+                end_picker.set("minTime", date_str);
+            }
+            // Recalculate totals when start time changes
+            calculate_totals();
+        }
+    });
+
+    /**
+     * Fallback for other time inputs (e.g. WorkSchedule)
+     * Keeps 24h format for backend compatibility but shows 12h
+     */
+    flatpickr(".flatpickr-time:not(#id_start_time):not(#id_end_time)", {
+        enableTime: true,
+        noCalendar: true,
+        dateFormat: "H:i", // Send 24h
+        altInput: true,
+        altFormat: "h:i K", // Show 12h
+        time_24hr: false,
+        allowInput: true
+    });
+
+    // --- Global Variables for Calculation ---
+    const services_data = JSON.parse('{{ services_json|escapejs }}');
+    const total_amount_input = document.getElementById('id_total_amount');
+    const start_input = document.getElementById('id_start_time');
+    const end_input = document.getElementById('id_end_time');
+
+    /**
+     * Parses a time string into a Date object (using today's date)
+     * @param {string} time_str - Time string (e.g., "02:30 PM")
+     * @returns {Date|null} Date object or null if parsing fails
+     */
+    function parse_time(time_str) {
+        // time_str example: "02:30 PM"
+        const [time, period] = time_str.split(' ');
+        if (!time || !period) return null;
+        
+        let [hours, minutes] = time.split(':').map(Number);
+        if (isNaN(hours) || isNaN(minutes)) return null;
+
+        if (period.toUpperCase() === 'PM' && hours < 12) hours += 12;
+        if (period.toUpperCase() === 'AM' && hours === 12) hours = 0;
+
+        const date = new Date();
+        date.setHours(hours, minutes, 0, 0);
+        return date;
+    }
+
+    /**
+     * Formats a Date object to "hh:mm K" string
+     * @param {Date} date_obj - Date object to format
+     * @returns {string} Formatted time string (e.g., "02:30 PM")
+     */
+    function format_time(date_obj) {
+        let hours = date_obj.getHours();
+        let minutes = date_obj.getMinutes();
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        
+        hours = hours % 12;
+        hours = hours ? hours : 12; 
+        minutes = minutes < 10 ? '0' + minutes : minutes;
+        
+        return `${hours}:${minutes} ${ampm}`;
+    }
+
+    /**
+     * Calculates total amount and estimated end time based on selected services
+     * Triggered by changes in Service selection or Start Time
+     */
+    function calculate_totals() {
+        const services_select = document.getElementById('id_services');
+        const selected_options = Array.from(services_select.selectedOptions);
+        
+        let total_amount = 0;
+        let total_duration = 0;
+
+        selected_options.forEach(option => {
+            const data = services_data[option.value];
+            if (data) {
+                total_amount += data.price;
+                total_duration += data.duration;
+            }
+        });
+
+        if (total_amount_input) {
+            total_amount_input.value = total_amount.toFixed(2);
+        }
+
+        const start_time_str = start_input.value; 
+        if (start_time_str && total_duration > 0) {
+            const date_obj = parse_time(start_time_str);
+            if (date_obj) {
+                date_obj.setMinutes(date_obj.getMinutes() + total_duration);
+                const end_time_str = format_time(date_obj);
+                
+                if (end_picker) {
+                    end_picker.setDate(end_time_str, true); 
+                } else if (end_input) {
+                    end_input.value = end_time_str;
+                }
+            }
+        }
+    }
+
+    let choices_elements = document.querySelectorAll('.choices');
+    
+    for (let i = 0; i < choices_elements.length; i++) {
+        const el = choices_elements[i];
+        let init_choice;
+        
+        if (el.classList.contains("multiple-remove")) {
+            init_choice = new Choices(el, {
                 delimiter: ',',
                 editItems: true,
                 maxItemCount: -1,
                 removeItemButton: true,
             });
+            el.addEventListener('change', calculate_totals);
         } else {
-            initChoice = new Choices(choices[i]);
+            init_choice = new Choices(el);
         }
     }
 </script>

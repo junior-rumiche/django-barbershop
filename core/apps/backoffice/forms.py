@@ -537,6 +537,17 @@ class UserProfileForm(forms.ModelForm):
 
 
 class AppointmentForm(forms.ModelForm):
+    start_time = forms.TimeField(
+        widget=forms.TextInput(attrs={"class": "form-control flatpickr-time h-100", "placeholder": "09:00 AM"}),
+        input_formats=["%H:%M", "%I:%M %p", "%I:%M%p"],
+        label="Hora Inicio"
+    )
+    end_time = forms.TimeField(
+        widget=forms.TextInput(attrs={"class": "form-control flatpickr-time h-100", "placeholder": "10:00 AM"}),
+        input_formats=["%H:%M", "%I:%M %p", "%I:%M%p"],
+        label="Hora Fin"
+    )
+
     class Meta:
         model = Appointment
         fields = [
@@ -556,8 +567,8 @@ class AppointmentForm(forms.ModelForm):
             "barber": forms.Select(attrs={"class": "form-select choices"}),
             "services": forms.SelectMultiple(attrs={"class": "form-select choices multiple-remove"}),
             "date": forms.TextInput(attrs={"class": "form-control flatpickr-date", "placeholder": "YYYY-MM-DD"}),
-            "start_time": forms.TextInput(attrs={"class": "form-control flatpickr-time", "placeholder": "HH:MM"}),
-            "end_time": forms.TextInput(attrs={"class": "form-control flatpickr-time", "placeholder": "HH:MM"}),
+            "start_time": forms.TextInput(attrs={"class": "form-control flatpickr-time h-100", "placeholder": "09:00 AM"}),
+            "end_time": forms.TextInput(attrs={"class": "form-control flatpickr-time h-100", "placeholder": "10:00 AM"}),
             "total_amount": forms.NumberInput(attrs={"class": "form-control"}),
             "status": forms.Select(attrs={"class": "form-select"}),
         }
@@ -567,11 +578,26 @@ class AppointmentForm(forms.ModelForm):
             "barber": "Barbero",
             "services": "Servicios",
             "date": "Fecha",
-            "start_time": "Hora Inicio",
-            "end_time": "Hora Fin",
+            # Labels for start/end time handled in field definition
             "total_amount": "Total Estimado",
             "status": "Estado",
         }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        start = cleaned_data.get("start_time")
+        end = cleaned_data.get("end_time")
+        date = cleaned_data.get("date")
+
+        # Validate past dates only on creation
+        if not self.instance.pk and date:
+            if date < timezone.now().date():
+                self.add_error("date", "No se pueden crear citas con fechas pasadas.")
+
+        if start and end and end <= start:
+            self.add_error("end_time", "La hora de fin debe ser posterior a la de inicio.")
+        
+        return cleaned_data
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
