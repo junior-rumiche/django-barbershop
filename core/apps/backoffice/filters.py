@@ -3,7 +3,7 @@ from django import forms
 from django.utils import timezone
 from django.db.models import Q
 from django.contrib.auth.models import User, Group
-from core.apps.backoffice.models import Category, Product, Order, SupplyEntry, BarberProfile
+from core.apps.backoffice.models import Category, Product, Order, SupplyEntry, BarberProfile, Appointment
 
 
 class SupplyEntryFilter(django_filters.FilterSet):
@@ -29,16 +29,22 @@ class SupplyEntryFilter(django_filters.FilterSet):
     def __init__(self, data=None, queryset=None, *, request=None, prefix=None):
         if data is None:
             data = {}
-            today = timezone.now().date()
-            first_day = today.replace(day=1)
-            data["date_after"] = first_day.strftime("%Y-%m-%d")
+            now = timezone.now()
+            today = now.date()
+            # Monday is the start of the week: today.weekday() returns 0 for Monday
+            days_since_monday = today.weekday()
+            last_monday = today - timezone.timedelta(days=days_since_monday)
+            
+            data["date_after"] = last_monday.strftime("%Y-%m-%d")
             data["date_before"] = today.strftime("%Y-%m-%d")
         else:
             data = data.copy()
             if "date_after" not in data and "date_before" not in data:
-                today = timezone.now().date()
-                first_day = today.replace(day=1)
-                data["date_after"] = first_day.strftime("%Y-%m-%d")
+                now = timezone.now()
+                today = now.date()
+                days_since_monday = today.weekday()
+                last_monday = today - timezone.timedelta(days=days_since_monday)
+                data["date_after"] = last_monday.strftime("%Y-%m-%d")
                 data["date_before"] = today.strftime("%Y-%m-%d")
 
         super().__init__(data, queryset, request=request, prefix=prefix)
@@ -78,9 +84,14 @@ class OrderFilter(django_filters.FilterSet):
         # This preserves the user's filter choices when paginating
         if data is None:
             data = {}
-            today = timezone.now().strftime("%Y-%m-%d")
-            data["created_at_after"] = today
-            data["created_at_before"] = today
+            now = timezone.now()
+            today = now.date()
+            # Monday is the start of the week: today.weekday() returns 0 for Monday
+            days_since_monday = today.weekday()
+            last_monday = today - timezone.timedelta(days=days_since_monday)
+            
+            data["created_at_after"] = last_monday.strftime("%Y-%m-%d")
+            data["created_at_before"] = today.strftime("%Y-%m-%d")
             data["status"] = "PENDING"
         else:
             # data is provided (from GET parameters), don't override it
@@ -225,6 +236,51 @@ class BarberProfileFilter(django_filters.FilterSet):
                 data["is_active"] = "true"
         super().__init__(data, queryset, request=request, prefix=prefix)
 
+
+class AppointmentFilter(django_filters.FilterSet):
+    client_name = django_filters.CharFilter(
+        lookup_expr="icontains",
+        label="Cliente",
+        widget=forms.TextInput(
+            attrs={"class": "form-control", "placeholder": "Buscar cliente..."}
+        ),
+    )
+    barber = django_filters.ModelChoiceFilter(
+        queryset=BarberProfile.objects.all(),
+        label="Barbero",
+        widget=forms.Select(attrs={"class": "form-select"}),
+    )
+    status = django_filters.ChoiceFilter(
+        choices=Appointment.STATUS_CHOICES,
+        label="Estado",
+        widget=forms.Select(attrs={"class": "form-select"}),
+    )
+    date = django_filters.DateFromToRangeFilter(
+        label="Rango de Fechas",
+        widget=django_filters.widgets.RangeWidget(
+            attrs={"class": "form-control", "placeholder": "YYYY-MM-DD"}
+        ),
+    )
+
+    def __init__(self, data=None, queryset=None, *, request=None, prefix=None):
+        if data is None:
+            data = {}
+            now = timezone.now()
+            today = now.date()
+            # Monday is the start of the week: today.weekday() returns 0 for Monday
+            days_since_monday = today.weekday()
+            last_monday = today - timezone.timedelta(days=days_since_monday)
+            
+            data["date_after"] = last_monday.strftime("%Y-%m-%d")
+            data["date_before"] = today.strftime("%Y-%m-%d")
+        else:
+            data = data.copy()
+            if "date_after" not in data and "date_before" not in data:
+                 pass
+                 
+        super().__init__(data, queryset, request=request, prefix=prefix)
+
     class Meta:
-        model = BarberProfile
-        fields = ["nickname", "is_active"]
+        model = Appointment
+        fields = ["client_name", "barber", "status", "date"]
+

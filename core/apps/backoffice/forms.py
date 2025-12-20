@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User, Group, Permission
 from django.apps import apps
-from core.apps.backoffice.models import Category, Product, Order, OrderItem, SupplyEntry, BarberProfile, WorkSchedule
+from core.apps.backoffice.models import Category, Product, Order, OrderItem, SupplyEntry, BarberProfile, WorkSchedule, Appointment
 
 
 class SupplyEntryForm(forms.ModelForm):
@@ -535,3 +535,53 @@ class UserProfileForm(forms.ModelForm):
                         "class"
                     ] = f"{current_class} is-invalid".strip()
 
+
+class AppointmentForm(forms.ModelForm):
+    class Meta:
+        model = Appointment
+        fields = [
+            "client_name",
+            "client_phone",
+            "barber",
+            "services",
+            "date",
+            "start_time",
+            "end_time",
+            "total_amount",
+            "status",
+        ]
+        widgets = {
+            "client_name": forms.TextInput(attrs={"class": "form-control"}),
+            "client_phone": forms.TextInput(attrs={"class": "form-control"}),
+            "barber": forms.Select(attrs={"class": "form-select choices"}),
+            "services": forms.SelectMultiple(attrs={"class": "form-select choices multiple-remove"}),
+            "date": forms.TextInput(attrs={"class": "form-control flatpickr-date", "placeholder": "YYYY-MM-DD"}),
+            "start_time": forms.TextInput(attrs={"class": "form-control flatpickr-time", "placeholder": "HH:MM"}),
+            "end_time": forms.TextInput(attrs={"class": "form-control flatpickr-time", "placeholder": "HH:MM"}),
+            "total_amount": forms.NumberInput(attrs={"class": "form-control"}),
+            "status": forms.Select(attrs={"class": "form-select"}),
+        }
+        labels = {
+            "client_name": "Nombre Cliente",
+            "client_phone": "Teléfono / WhatsApp",
+            "barber": "Barbero",
+            "services": "Servicios",
+            "date": "Fecha",
+            "start_time": "Hora Inicio",
+            "end_time": "Hora Fin",
+            "total_amount": "Total Estimado",
+            "status": "Estado",
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Filter services to only show products marked as is_service=True
+        self.fields['services'].queryset = Product.objects.filter(is_service=True)
+        
+        for field_name in self.errors:
+            if field_name in self.fields:
+                current_class = self.fields[field_name].widget.attrs.get("class", "")
+                if "is-invalid" not in current_class:
+                    self.fields[field_name].widget.attrs[
+                        "class"
+                    ] = f"{current_class} is-invalid".strip()

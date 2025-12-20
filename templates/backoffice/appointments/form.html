@@ -1,0 +1,194 @@
+{% extends 'base/backoffice/base.html' %}
+{% load static %}
+
+{% block styles %}
+<link rel="stylesheet" href="{% static 'backoffice/extensions/flatpickr/flatpickr.min.css' %}">
+<link rel="stylesheet" href="{% static 'backoffice/extensions/choices.js/public/assets/styles/choices.css' %}">
+{% endblock %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="page-heading">
+    <div class="page-title">
+        <div class="row">
+            <div class="col-12 col-md-6 order-md-1 order-last">
+                <h3>{{ page_title }}</h3>
+                <p class="text-subtitle text-muted">Complete el formulario para agendar o editar la cita.</p>
+            </div>
+            <div class="col-12 col-md-6 order-md-2 order-first">
+                <nav aria-label="breadcrumb" class="breadcrumb-header float-start float-lg-end">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{% url 'backoffice:dashboard' %}">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'backoffice:appointment_list' %}">Agenda</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">{{ page_title }}</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <section id="basic-vertical-layouts">
+        <div class="row match-height">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-content">
+                        <div class="card-body">
+                            <form class="form form-vertical" method="post">
+                                {% csrf_token %}
+                                <div class="form-body">
+                                    <div class="row">
+                                        {% if form.non_field_errors %}
+                                        <div class="col-12">
+                                            <div class="alert alert-danger">
+                                                {{ form.non_field_errors }}
+                                            </div>
+                                        </div>
+                                        {% endif %}
+
+                                        <!-- Cliente -->
+                                        <div class="col-md-6 col-12">
+                                            <div class="form-group">
+                                                <label for="{{ form.client_name.id_for_label }}">{{ form.client_name.label }}</label>
+                                                {{ form.client_name }}
+                                                {% if form.client_name.errors %}
+                                                <div class="invalid-feedback d-block">{{ form.client_name.errors.as_text }}</div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 col-12">
+                                            <div class="form-group">
+                                                <label for="{{ form.client_phone.id_for_label }}">{{ form.client_phone.label }}</label>
+                                                {{ form.client_phone }}
+                                                {% if form.client_phone.errors %}
+                                                <div class="invalid-feedback d-block">{{ form.client_phone.errors.as_text }}</div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+
+                                        <!-- Cita Info -->
+                                        <div class="col-md-6 col-12">
+                                            <div class="form-group">
+                                                <label for="{{ form.barber.id_for_label }}">{{ form.barber.label }}</label>
+                                                {{ form.barber }}
+                                                {% if form.barber.errors %}
+                                                <div class="invalid-feedback d-block">{{ form.barber.errors.as_text }}</div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-md-6 col-12">
+                                            <div class="form-group">
+                                                <label for="{{ form.status.id_for_label }}">{{ form.status.label }}</label>
+                                                {{ form.status }}
+                                                {% if form.status.errors %}
+                                                <div class="invalid-feedback d-block">{{ form.status.errors.as_text }}</div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+
+                                        <div class="col-12">
+                                            <div class="form-group">
+                                                <label for="{{ form.services.id_for_label }}">{{ form.services.label }}</label>
+                                                {{ form.services }}
+                                                {% if form.services.errors %}
+                                                <div class="invalid-feedback d-block">{{ form.services.errors.as_text }}</div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+
+                                        <!-- Fecha y Hora -->
+                                        <div class="col-md-4 col-12">
+                                            <div class="form-group">
+                                                <label for="{{ form.date.id_for_label }}">{{ form.date.label }}</label>
+                                                {{ form.date }}
+                                                {% if form.date.errors %}
+                                                <div class="invalid-feedback d-block">{{ form.date.errors.as_text }}</div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 col-12">
+                                            <div class="form-group">
+                                                <label for="{{ form.start_time.id_for_label }}">{{ form.start_time.label }}</label>
+                                                {{ form.start_time }}
+                                                {% if form.start_time.errors %}
+                                                <div class="invalid-feedback d-block">{{ form.start_time.errors.as_text }}</div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 col-12">
+                                            <div class="form-group">
+                                                <label for="{{ form.end_time.id_for_label }}">{{ form.end_time.label }}</label>
+                                                {{ form.end_time }}
+                                                {% if form.end_time.errors %}
+                                                <div class="invalid-feedback d-block">{{ form.end_time.errors.as_text }}</div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6 col-12">
+                                            <div class="form-group">
+                                                <label for="{{ form.total_amount.id_for_label }}">{{ form.total_amount.label }}</label>
+                                                {{ form.total_amount }}
+                                                {% if form.total_amount.errors %}
+                                                <div class="invalid-feedback d-block">{{ form.total_amount.errors.as_text }}</div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+
+
+                                        <div class="col-12 d-flex justify-content-end mt-3">
+                                            <a href="{% url 'backoffice:appointment_list' %}"
+                                                class="btn btn-light-secondary me-1 mb-1">
+                                                <i class="bi bi-x-circle me-2"></i>
+                                                Cancelar
+                                            </a>
+                                            <button type="submit" class="btn btn-primary me-1 mb-1">
+                                                <i class="bi bi-check-circle me-2"></i>
+                                                Guardar
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'backoffice/extensions/flatpickr/flatpickr.min.js' %}"></script>
+<script src="{% static 'backoffice/extensions/choices.js/public/assets/scripts/choices.js' %}"></script>
+<script>
+    flatpickr(".flatpickr-date", {
+        dateFormat: "Y-m-d",
+        allowInput: true
+    });
+    flatpickr(".flatpickr-time", {
+        enableTime: true,
+        noCalendar: true,
+        dateFormat: "H:i",
+        time_24hr: true,
+        allowInput: true
+    });
+
+    let choices = document.querySelectorAll('.choices');
+    let initChoice;
+    for (let i = 0; i < choices.length; i++) {
+        if (choices[i].classList.contains("multiple-remove")) {
+            initChoice = new Choices(choices[i], {
+                delimiter: ',',
+                editItems: true,
+                maxItemCount: -1,
+                removeItemButton: true,
+            });
+        } else {
+            initChoice = new Choices(choices[i]);
+        }
+    }
+</script>
+{% endblock %}

@@ -200,11 +200,24 @@
          }
       }
 
-      flatpickr("input[placeholder='YYYY-MM-DD']", {
+      const today = new Date();
+      const day_of_week = today.getDay(); // Sun=0, Mon=1...
+      const days_since_monday = (day_of_week + 6) % 7;
+      const last_monday = new Date(today);
+      last_monday.setDate(today.getDate() - days_since_monday);
+
+      flatpickr("#id_created_at_0", {
          locale: "es",
          dateFormat: "Y-m-d",
          allowInput: true,
-         defaultDate: has_date_filter ? null : new Date()
+         defaultDate: has_date_filter ? null : last_monday
+      });
+
+      flatpickr("#id_created_at_1", {
+         locale: "es",
+         dateFormat: "Y-m-d",
+         allowInput: true,
+         defaultDate: has_date_filter ? null : today
       });
    });
 </script>

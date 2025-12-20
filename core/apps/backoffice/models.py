@@ -298,3 +298,56 @@ class WorkSchedule(models.Model):
 
     def __str__(self):
         return f"{self.barber} - {self.get_day_of_week_display()}"
+
+
+class Appointment(models.Model):
+    STATUS_CHOICES = [
+        ('REQUESTED', 'Solicitud (Pendiente de Contacto)'), # Estado Inicial
+        ('CONFIRMED', 'Confirmada (Cliente Contactado)'),   # Ya hablaste con él
+        ('COMPLETED', 'Atendida'),
+        ('CANCELED', 'Cancelada / No Contestó'),
+    ]
+
+    # Datos Cliente
+    client_name = models.CharField(max_length=150, verbose_name="Nombre Cliente")
+    client_phone = models.CharField(max_length=20, verbose_name="WhatsApp / Teléfono")
+
+    # Datos Cita
+    barber = models.ForeignKey('BarberProfile', on_delete=models.PROTECT, verbose_name="Barbero")
+    services = models.ManyToManyField('Product', verbose_name="Servicios Solicitados")
+
+    date = models.DateField(verbose_name="Fecha")
+    start_time = models.TimeField(verbose_name="Hora Inicio")
+    end_time = models.TimeField(verbose_name="Hora Fin") 
+    
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Total Estimado")
+    
+    status = models.CharField(
+        max_length=20, 
+        choices=STATUS_CHOICES, 
+        default='REQUESTED', 
+        verbose_name="Estado Actual"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Solicitud de Cita"
+        verbose_name_plural = "Agenda de Solicitudes"
+        ordering = ['date', 'start_time']
+
+    def __str__(self):
+        return f"{self.client_name} - {self.date} {self.start_time}"
+
+    def clean(self):
+        if self.status == 'CANCELED': return
+        overlapping = Appointment.objects.filter(
+            barber=self.barber, date=self.date
+        ).exclude(status='CANCELED').exclude(pk=self.pk)
+
+        for appt in overlapping:
+            if self.start_time < appt.end_time and self.end_time > appt.start_time:
+                raise ValidationError(f"Horario ocupado por {appt.client_name}")
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)

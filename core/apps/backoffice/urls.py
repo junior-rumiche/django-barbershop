@@ -38,6 +38,11 @@ from core.apps.backoffice.views.barbers import (
     BarberUpdateView,
     BarberUpdateView,
 )
+from core.apps.backoffice.views.appointments import (
+    AppointmentListView,
+    AppointmentCreateView,
+    AppointmentUpdateView,
+)
 from core.apps.backoffice.views.profile import ProfileUpdateView
 
 
@@ -89,4 +94,9 @@ urlpatterns = [
     path("barbers/", BarberListView.as_view(), name="barber_list"),
     path("barbers/add/", BarberCreateView.as_view(), name="barber_add"),
     path("barbers/<int:pk>/edit/", BarberUpdateView.as_view(), name="barber_edit"),
+
+    # Appointments URLs
+    path("appointments/", AppointmentListView.as_view(), name="appointment_list"),
+    path("appointments/add/", AppointmentCreateView.as_view(), name="appointment_add"),
+    path("appointments/<int:pk>/edit/", AppointmentUpdateView.as_view(), name="appointment_edit"),
 ]

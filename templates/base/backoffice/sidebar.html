@@ -75,12 +75,14 @@
                 </li>
                 {% endif %}
 
-                <li class="sidebar-item  ">
-                    <a href="ui-file-uploader.html" class='sidebar-link'>
+                {% if perms.backoffice.view_appointment %}
+                <li class="sidebar-item  {% if 'appointment_' in request.resolver_match.url_name %}active{% endif %}">
+                    <a href="{% url 'backoffice:appointment_list' %}" class='sidebar-link'>
                         <i class="bi bi-calendar-check"></i>
                         <span>Reservas</span>
                     </a>
                 </li>
+                {% endif %}
 
 
 
