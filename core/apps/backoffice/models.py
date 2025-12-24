@@ -8,6 +8,7 @@ from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
 from django.utils import timezone
 from decimal import Decimal
+from datetime import datetime, timedelta, date
 
 
 class Category(models.Model):
@@ -340,13 +341,69 @@ class Appointment(models.Model):
 
     def clean(self):
         if self.status == 'CANCELED': return
+        if not self.start_time or not self.end_time: return
         overlapping = Appointment.objects.filter(
             barber=self.barber, date=self.date
-        ).exclude(status='CANCELED').exclude(pk=self.pk)
+        ).exclude(status='CANCELED').exclude(pk=self.pk).exclude(start_time__isnull=True).exclude(end_time__isnull=True)
 
         for appt in overlapping:
             if self.start_time < appt.end_time and self.end_time > appt.start_time:
-                raise ValidationError(f"Horario ocupado por {appt.client_name}")
+                raise ValidationError("El horario seleccionado ya no está disponible. Por favor elige otro.")
+
+        # Check Work Schedule and Buffers (2h after start, 2h before end)
+        if self.date and self.barber:
+            day_idx = self.date.weekday()
+            schedule = WorkSchedule.objects.filter(barber=self.barber, day_of_week=day_idx).first()
+
+            if schedule:
+                # Calculate Valid Window
+                shift_start_dt = datetime.combine(self.date, schedule.start_hour)
+                shift_end_dt = datetime.combine(self.date, schedule.end_hour)
+                
+                valid_start_dt = shift_start_dt + timedelta(hours=2)
+                valid_end_dt = shift_end_dt - timedelta(hours=2)
+                
+                appt_start_dt = datetime.combine(self.date, self.start_time)
+                # For end_time which might be midnight if just duration... but here it is a TimeField
+                appt_end_dt = datetime.combine(self.date, self.end_time)
+
+                if appt_start_dt < valid_start_dt:
+                    raise ValidationError(f"Las citas inician 2 horas después de la entrada. Inicio válido desde: {valid_start_dt.strftime('%I:%M %p')}")
+                
+                if appt_end_dt > valid_end_dt:
+                    raise ValidationError(f"Las citas deben terminar 2 horas antes de la salida. Fin límite: {valid_end_dt.strftime('%I:%M %p')}")
+            else:
+                raise ValidationError("El barbero no tiene horario asignado para este día.")
+
+        # Check Active Orders (Walk-ins)
+        # We assume the barber user is the one who created the order
+        if self.barber and self.barber.user:
+            active_orders = Order.objects.filter(
+                created_by=self.barber.user,
+                status='PENDING',
+                created_at__date=self.date 
+            ).prefetch_related('items__product')
+            
+            for order in active_orders:
+                # Calculate Duration
+                duration_minutes = 0
+                for item in order.items.all():
+                    if item.product.is_service:
+                        duration_minutes += item.product.duration * item.quantity
+                
+                if duration_minutes > 0:
+                    # Order times are timezone aware usually, simplify for comparison
+                    # Convert order time to local time if needed or just use time component
+                    order_start = timezone.localtime(order.created_at).time()
+                    order_end_dt = timezone.localtime(order.created_at) + timedelta(minutes=duration_minutes)
+                    order_end = order_end_dt.time()
+                    
+                    # Handle day wrapping if needed (rare for barber hours but possible)
+                    if order_end_dt.date() > timezone.localtime(order.created_at).date():
+                        order_end = time(23, 59)
+
+                    if self.start_time < order_end and self.end_time > order_start:
+                         raise ValidationError("El barbero está ocupado con una atención en curso (Walk-in).")
 
     def save(self, *args, **kwargs):
         self.clean()

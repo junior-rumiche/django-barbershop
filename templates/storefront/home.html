@@ -21,7 +21,7 @@
                 Más que un corte, una experiencia. Descubre el arte de la barbería tradicional fusionada con las
                 tendencias más actuales.
             </p>
-            <div class="flex gap-4 reveal delay-300" style="flex-wrap: wrap;">
+            <div class="flex gap-4 reveal delay-300 flex-wrap">
                 <a href="#reservar" class="btn btn-primary btn-shine click-animate">RESERVAR CITA</a>
                 <a href="#servicios" class="btn btn-outline click-animate">
                     VER SERVICIOS
@@ -38,24 +38,24 @@
             <h2>NOSOTROS</h2>
             <div class="divider"></div>
         </div>
-        <div class="about-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+        <div class="about-grid">
             <!-- Mission -->
-            <div class="card reveal delay-100" style="text-align: center;">
-                <div class="card-icon-box" style="margin: 0 auto 1.5rem auto;">
+            <div class="card reveal delay-100 text-center">
+                <div class="card-icon-box card-icon-margin">
                     <i class="fas fa-bullseye"></i>
                 </div>
                 <h3>NUESTRA MISIÓN</h3>
-                <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6;">
+                <p class="text-muted-p">
                     Nuestra misión es ofrecer cortes y estilos de alto nivel, brindando una experiencia personalizada que fusiona técnica, tendencia y calidad en cada visita.
                 </p>
             </div>
             <!-- Vision -->
-            <div class="card reveal delay-200" style="text-align: center;">
-                <div class="card-icon-box" style="margin: 0 auto 1.5rem auto;">
+            <div class="card reveal delay-200 text-center">
+                <div class="card-icon-box card-icon-margin">
                     <i class="fas fa-eye"></i>
                 </div>
                 <h3>NUESTRA VISIÓN</h3>
-                <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6;">
+                <p class="text-muted-p">
                     Nuestra visión es posicionarnos como la barbería líder en Olmos y ser reconocidos en todo el norte del Perú por nuestra innovación, profesionalismo y por brindar una experiencia que marca la diferencia.
                 </p>
             </div>
@@ -73,66 +73,28 @@
             </p>
         </div>
         <div class="services-grid">
-            <!-- Card 1 -->
+            {% for service in services|slice:":6" %}
             <div class="card reveal delay-100">
                 <div class="card-icon-box">
                     <i class="fas fa-cut"></i>
                 </div>
-                <h3>CORTE CLÁSICO</h3>
-                <p style="color: var(--text-muted);
-                              margin-bottom: 1.5rem;
-                              font-size: 0.9rem">
-                    Corte personalizado con tijera y máquina, lavado, peinado y asesoramiento de imagen.
+                <h3>{{ service.name|upper }}</h3>
+                <p class="service-desc">
+                    {{ service.category.name|default:"Servicio Premium" }} - Duración aprox: {{ service.duration }} min.
                 </p>
                 <div class="card-price">
-                    <span class="price-tag">$20.00</span>
-                    <button class="btn-text">RESERVAR</button>
+                    <span class="price-tag">S/.{{ service.price }}</span>
+                    <a href="#reservar" class="btn-text" onclick="select_service_from_card('{{ service.id }}', '{{ service.price }}', '{{ service.duration }}')">RESERVAR</a>
                 </div>
             </div>
-            <!-- Card 2 -->
-            <div class="card reveal delay-200">
-                <div class="card-icon-box">
-                    <i class="fas fa-user-tie"></i>
-                </div>
-                <h3>AFEITADO PREMIUM</h3>
-                <p style="color: var(--text-muted);
-                              margin-bottom: 1.5rem;
-                              font-size: 0.9rem">
-                    Ritual de afeitado con toalla caliente, aceites esenciales y masaje facial relajante.
-                </p>
-                <div class="card-price">
-                    <span class="price-tag">$15.00</span>
-                    <button class="btn-text">RESERVAR</button>
-                </div>
-            </div>
-            <!-- Card 3 -->
-            <div class="card reveal delay-300">
-                <div class="card-icon-box">
-                    <i class="fas fa-bolt"></i>
-                </div>
-                <h3>CORTE + BARBA</h3>
-                <p style="color: var(--text-muted);
-                              margin-bottom: 1.5rem;
-                              font-size: 0.9rem">
-                    El servicio completo. Corte de cabello detallado y perfilado de barba con ritual de toallas.
-                </p>
-                <div class="card-price">
-                    <span class="price-tag">$30.00</span>
-                    <button class="btn-text">RESERVAR</button>
-                </div>
-            </div>
+            {% endfor %}
         </div>
     </div>
 </section>
 <!-- --- RESERVATION SECTION --- -->
-<section id="reservar" class="section" style="background: black;">
+<section id="reservar" class="section bg-black">
     <!-- Decorative elements -->
-    <div style="position: absolute;
-                    top: 0;
-                    left: 0;
-                    width: 100%;
-                    height: 1px;
-                    background: linear-gradient(90deg, transparent, #333, transparent)"></div>
+    <div class="reservation-divider"></div>
     <div class="container">
         <div class="split-section">
             <!-- Text Content -->
@@ -143,174 +105,426 @@
                     EN LÍNEA
                 </h2>
                 <p class="lead">
-                    No pierdas tiempo esperando. Selecciona tu barbero preferido, el día y la hora que mejor te
-                    convenga.
+                    Selecciona tu barbero, servicios y horario ideal.
                 </p>
-                <div class="feature-box">
-                    <div class="icon-circle">
-                        <i class="far fa-clock"></i>
-                    </div>
-                    <div>
-                        <h4 style="font-weight: 700; margin-bottom: 2px;">Horarios Flexibles</h4>
-                        <p style="font-size: 0.85rem; color: var(--text-muted);">Todos los días de 9:00 AM a 9:00 PM
-                        </p>
+
+                <!-- Step 1: Barber Selection -->
+                <div class="mb-4">
+                    <h4 class="step-title">1. ELIGE TU BARBERO</h4>
+                    <div class="barber-selection-grid">
+                        {% for barber in barbers %}
+                        <div class="barber-option" data-id="{{ barber.id }}" onclick="select_barber(this)">
+                            {% if barber.photo %}
+                            <img src="{{ barber.photo.url }}" alt="{{ barber }}" class="barber-avatar">
+                            {% else %}
+                            <div class="barber-avatar-placeholder">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            {% endif %}
+                            <span class="barber-name">{{ barber.nickname|default:barber.user.first_name }}</span>
+                        </div>
+                        {% endfor %}
                     </div>
                 </div>
-                <div class="feature-box">
-                    <div class="icon-circle">
-                        <i class="fas fa-check-circle"></i>
-                    </div>
-                    <div>
-                        <h4 style="font-weight: 700; margin-bottom: 2px;">Confirmación Inmediata</h4>
-                        <p style="font-size: 0.85rem; color: var(--text-muted);">Recibe un recordatorio automático antes
-                            de tu cita.</p>
+
+                <!-- Step 2: Services Selection -->
+                <div class="mb-4">
+                    <h4 class="step-title">2. SERVICIOS</h4>
+                    <div class="services-list">
+                        {% for service in services %}
+                        <button type="button" class="service-chip" data-id="{{ service.id }}" data-price="{{ service.price }}" data-duration="{{ service.duration }}" onclick="toggle_service(this)">
+                            {{ service.name }} - S/.{{ service.price }}
+                        </button>
+                        {% endfor %}
                     </div>
                 </div>
+                
+                <!-- Summary -->
+                 <div id="booking-summary" style="padding: 15px; background: rgba(255,255,255,0.05); border-radius: 8px; margin-top: 20px;">
+                    <p style="margin: 0; font-size: 0.9rem; color: #ccc;">Total: <strong style="color: #c5a059;" id="summary-total">S/.0.00</strong></p>
+                    <p style="margin: 0; font-size: 0.9rem; color: #ccc;">Duración: <span id="summary-duration">0 min</span></p>
+                 </div>
+
             </div>
+            
             <!-- Calendar Widget -->
-            <div style="flex: 1;
-                            display: flex;
-                            justify-content: center;
-                            width: 100%" class="reveal delay-200">
+            <div style="flex: 1; display: flex; justify-content: center; width: 100%" class="reveal delay-200">
                 <div class="calendar-wrapper">
+                    <div id="calendar-overlay" class="calendar-overlay">
+                        <span class="overlay-msg"><i class="fas fa-arrow-left"></i> Selecciona un barbero primero</span>
+                    </div>
+
                     <div class="calendar-header">
-                        <h3 style="display: flex;
-                                       align-items: center;
-                                       gap: 10px;
-                                       font-size: 1.25rem">
-                            <i class="far fa-calendar-alt" style="color: #a3a3a3;"></i>
-                            Noviembre 2023
+                        <h3 id="currentMonthYear" class="calendar-month-header">
+                            <!-- JS Generated -->
                         </h3>
                         <div class="flex gap-2">
-                            <button class="day-btn" style="width: 30px; background: #262626;">
+                            <button class="day-btn month-nav-btn" onclick="prev_month()">
                                 <i class="fas fa-chevron-left"></i>
                             </button>
-                            <button class="day-btn" style="width: 30px; background: #262626;">
+                            <button class="day-btn month-nav-btn" onclick="next_month()">
                                 <i class="fas fa-chevron-right"></i>
                             </button>
                         </div>
                     </div>
+                    
                     <!-- Days Header -->
-                    <div class="calendar-grid" style="margin-bottom: 0.5rem;">
-                        <div class="day-label">Lun</div>
-                        <div class="day-label">Mar</div>
-                        <div class="day-label">Mié</div>
-                        <div class="day-label">Jue</div>
-                        <div class="day-label">Vie</div>
-                        <div class="day-label">Sáb</div>
-                        <div class="day-label">Dom</div>
+                    <div class="calendar-grid days-header">
+                        <div>Lun</div><div>Mar</div><div>Mié</div><div>Jue</div><div>Vie</div><div>Sáb</div><div>Dom</div>
                     </div>
+                    
                     <!-- Days Generated by JS -->
-                    <div id="calendar-grid" class="calendar-grid"></div>
+                    <div id="calendar-days" class="calendar-grid"></div>
+                    
                     <!-- Time Slots -->
-                    <p style="font-size: 0.85rem;
-                                  color: var(--text-muted);
-                                  margin-bottom: 0.5rem">Horarios disponibles:</p>
-                    <div class="time-grid">
-                        <button class="time-btn click-animate">10:00 AM</button>
-                        <button class="time-btn click-animate active">11:30 AM</button>
-                        <button class="time-btn click-animate">03:00 PM</button>
-                        <button class="time-btn click-animate">04:30 PM</button>
-                        <button class="time-btn click-animate">06:00 PM</button>
-                        <button class="time-btn click-animate">08:00 PM</button>
+                    <p class="slots-label">Horarios disponibles:</p>
+                    <div id="time-slots" class="time-grid time-slots-container">
+                        <!-- JS Generated -->
                     </div>
-                    <button class="btn btn-primary btn-shine click-animate" style="width: 100%;
-                                       margin-top: 2rem">CONFIRMAR CITA</button>
+                    
+                    <!-- Client Info Form (Initially Hidden) -->
+                    <div id="client-info-form" class="client-form">
+                         <input type="text" id="client_name" class="form-control-luxury mb-3 width-full" placeholder="Ingresa tu Nombre Completo">
+                         <input type="tel" id="client_phone" class="form-control-luxury mb-3 width-full" placeholder="Tu Teléfono / WhatsApp">
+                    </div>
+
+                    <button id="btn-confirm-booking" class="btn btn-primary btn-shine click-animate confirm-btn" onclick="submit_booking()" disabled>
+                        CONFIRMAR CITA
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 </section>
+
+
 <!-- --- TEAM SECTION --- -->
 <section id="equipo" class="section">
     <div class="container">
-        <div class="flex justify-between items-center reveal" style="margin-bottom: 3rem;
-                        flex-wrap: wrap;
-                        gap: 1rem">
+        <div class="flex justify-between items-center reveal team-header-container">
             <div>
                 <h2>NUESTRO EQUIPO</h2>
-                <p style="color: var(--text-muted);">Profesionales dedicados a perfeccionar tu imagen.</p>
+                <p class="text-muted-p">Profesionales dedicados a perfeccionar tu imagen.</p>
             </div>
             <button class="btn-text" style="font-size: 0.9rem;">VER TODO EL EQUIPO</button>
         </div>
         <div class="team-grid">
-            <!-- Barber 1 -->
+            {% for barber in barbers %}
             <div class="team-card reveal delay-100">
-                <img src="https://images.unsplash.com/photo-1503951914875-befbb763ca35?q=80&w=1888&auto=format&fit=crop"
-                    alt="Barber" class="team-img">
+                {% if barber.photo %}
+                <img src="{{ barber.photo.url }}" alt="{{ barber }}" class="team-img">
+                {% else %}
+                <div class="team-img" style="background: #333; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-user" style="font-size: 4rem; color: #555;"></i>
+                </div>
+                {% endif %}
                 <div class="team-overlay">
-                    <h3 style="font-size: 1.25rem; font-weight: bold;">Alex P.</h3>
-                    <p style="color: #d4d4d4; font-size: 0.9rem;">Master Barber</p>
-                    <div class="social-icons">
-                        <i class="fab fa-instagram" style="cursor: pointer;
-                                      transition: color 0.3s;
-                                      color: #ccc" onmouseover="this.style.color='white'"
-                            onmouseout="this.style.color='#ccc'"></i>
-                        <i class="fab fa-twitter" style="cursor: pointer;
-                                      transition: color 0.3s;
-                                      color: #ccc" onmouseover="this.style.color='white'"
-                            onmouseout="this.style.color='#ccc'"></i>
-                    </div>
+                    <h3 class="team-card-title">{{ barber.nickname|default:barber.user.first_name }}</h3>
+                    <p class="team-card-role">Barbero Profesional 4 Pelos</p>
+
                 </div>
             </div>
-            <!-- Barber 2 -->
-            <div class="team-card reveal delay-200">
-                <img src="https://images.unsplash.com/photo-1618077360395-f3068be8e001?q=80&w=2080&auto=format&fit=crop"
-                    alt="Barber" class="team-img">
-                <div class="team-overlay">
-                    <h3 style="font-size: 1.25rem; font-weight: bold;">David M.</h3>
-                    <p style="color: #d4d4d4; font-size: 0.9rem;">Estilista Senior</p>
-                    <div class="social-icons">
-                        <i class="fab fa-instagram" style="cursor: pointer;
-                                      transition: color 0.3s;
-                                      color: #ccc" onmouseover="this.style.color='white'"
-                            onmouseout="this.style.color='#ccc'"></i>
-                        <i class="fab fa-twitter" style="cursor: pointer;
-                                      transition: color 0.3s;
-                                      color: #ccc" onmouseover="this.style.color='white'"
-                            onmouseout="this.style.color='#ccc'"></i>
-                    </div>
-                </div>
-            </div>
-            <!-- Barber 3 -->
-            <div class="team-card reveal delay-300">
-                <img src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?q=80&w=1887&auto=format&fit=crop"
-                    alt="Barber" class="team-img">
-                <div class="team-overlay">
-                    <h3 style="font-size: 1.25rem; font-weight: bold;">Carlos R.</h3>
-                    <p style="color: #d4d4d4; font-size: 0.9rem;">Barba Especialista</p>
-                    <div class="social-icons">
-                        <i class="fab fa-instagram" style="cursor: pointer;
-                                      transition: color 0.3s;
-                                      color: #ccc" onmouseover="this.style.color='white'"
-                            onmouseout="this.style.color='#ccc'"></i>
-                        <i class="fab fa-twitter" style="cursor: pointer;
-                                      transition: color 0.3s;
-                                      color: #ccc" onmouseover="this.style.color='white'"
-                            onmouseout="this.style.color='#ccc'"></i>
-                    </div>
-                </div>
-            </div>
-            <!-- Barber 4 -->
-            <div class="team-card reveal delay-400">
-                <img src="https://images.unsplash.com/photo-1605497788044-5a32c7078486?q=80&w=1887&auto=format&fit=crop"
-                    alt="Barber" class="team-img">
-                <div class="team-overlay">
-                    <h3 style="font-size: 1.25rem; font-weight: bold;">Javier S.</h3>
-                    <p style="color: #d4d4d4; font-size: 0.9rem;">Barbero Clásico</p>
-                    <div class="social-icons">
-                        <i class="fab fa-instagram" style="cursor: pointer;
-                                      transition: color 0.3s;
-                                      color: #ccc" onmouseover="this.style.color='white'"
-                            onmouseout="this.style.color='#ccc'"></i>
-                        <i class="fab fa-twitter" style="cursor: pointer;
-                                      transition: color 0.3s;
-                                      color: #ccc" onmouseover="this.style.color='white'"
-                            onmouseout="this.style.color='#ccc'"></i>
-                    </div>
-                </div>
-            </div>
+            {% endfor %}
         </div>
     </div>
 </section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    /** @type {Date} Current date for calendar view */
+    let current_date = new Date();
+    /** @type {?string} Selected barber ID */
+    let selected_barber = null;
+    /** @type {?string} Selected date string (YYYY-MM-DD) */
+    let selected_date = null;
+    /** @type {?string} Selected time string (HH:MM AM/PM) */
+    let selected_time = null;
+    /** @type {Array<Object>} List of selected services */
+    let selected_services = [];
+
+    // --- Steps Logic ---
+
+    /**
+     * Handles the selection of a barber.
+     * @param {HTMLElement} el - The barber option element clicked.
+     */
+    function select_barber(el) {
+        // Visual
+        document.querySelectorAll('.barber-option').forEach(b => b.classList.remove('active'));
+        el.classList.add('active');
+        
+        // Data
+        selected_barber = el.dataset.id;
+        
+        // Unlock Calendar
+        document.getElementById('calendar-overlay').style.opacity = '0';
+        document.getElementById('calendar-overlay').style.pointerEvents = 'none';
+        
+        // Reset Date/Time
+        selected_date = null;
+        selected_time = null;
+        document.getElementById('time-slots').innerHTML = '';
+        render_calendar();
+    }
+
+    /**
+     * Toggles a service selection.
+     * @param {HTMLElement} el - The service chip element clicked.
+     */
+    function toggle_service(el) {
+        const id = el.dataset.id;
+        const price = parseFloat(el.dataset.price);
+        const duration = parseInt(el.dataset.duration);
+        
+        if (selected_services.find(s => s.id === id)) {
+            selected_services = selected_services.filter(s => s.id !== id);
+            el.classList.remove('active');
+        } else {
+            selected_services.push({ id, price, duration });
+            el.classList.add('active');
+        }
+        update_summary();
+    }
+
+    /**
+     * Selects a service directly from the services card.
+     * @param {string} id - The service ID.
+     * @param {string|number} price - The service price.
+     * @param {string|number} duration - The service duration.
+     */
+    function select_service_from_card(id, price, duration) {
+        // Ensure type consistency
+        const p = parseFloat(price);
+        const d = parseInt(duration);
+
+        // Check if already selected, if not add it
+        if (!selected_services.find(s => s.id === id)) {
+            selected_services.push({ id, price: p, duration: d });
+            update_summary();
+            
+            // Visual update on the chips in the form
+            document.querySelectorAll('.service-chip').forEach(chip => {
+                if(chip.dataset.id === id) {
+                    chip.classList.add('active');
+                }
+            });
+        }
+        // Smooth scroll is handled by href="#reservar", no explicit scroll needed here
+    }
+
+    /**
+     * Updates the booking summary (total price and duration).
+     */
+    function update_summary() {
+        const total = selected_services.reduce((sum, s) => sum + s.price, 0);
+        const duration = selected_services.reduce((sum, s) => sum + s.duration, 0);
+        
+        document.getElementById('summary-total').innerText = `S/.${total.toFixed(2)}`;
+        document.getElementById('summary-duration').innerText = `${duration} min`;
+    }
+
+    // --- Calendar Logic ---
+
+    /**
+     * Renders the calendar grid.
+     */
+    function render_calendar() {
+        const year = current_date.getFullYear();
+        const month = current_date.getMonth();
+        
+        const first_day = new Date(year, month, 1);
+        const last_day = new Date(year, month + 1, 0);
+        const days_in_month = last_day.getDate();
+        
+        // Adjust for Monday start (0=Sun -> 0=Mon logic)
+        let starting_day = first_day.getDay() - 1;
+        if (starting_day === -1) starting_day = 6;
+        
+        document.getElementById('currentMonthYear').innerText = new Intl.DateTimeFormat('es-ES', { month: 'long', year: 'numeric' }).format(current_date);
+        
+        const grid = document.getElementById('calendar-days');
+        grid.innerHTML = '';
+        
+        // Empty cells
+        for (let i = 0; i < starting_day; i++) {
+            grid.innerHTML += '<div></div>';
+        }
+        
+        // Days
+        for (let d = 1; d <= days_in_month; d++) {
+            const date_str = `${year}-${String(month + 1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+            const is_selected = selected_date === date_str ? 'selected-day' : '';
+            // Check past date
+            const check_date = new Date(year, month, d);
+            const is_past = check_date < new Date().setHours(0,0,0,0);
+            const past_class = is_past ? 'disabled-day' : 'cursor-pointer hover:bg-white/10';
+            
+            grid.innerHTML += `<div class="calendar-day p-2 rounded ${is_selected} ${past_class}" onclick="select_date('${date_str}', this)">${d}</div>`;
+        }
+    }
+
+    /**
+     * Navigates to the previous month.
+     */
+    function prev_month() { current_date.setMonth(current_date.getMonth() - 1); render_calendar(); }
+    
+    /**
+     * Navigates to the next month.
+     */
+    function next_month() { current_date.setMonth(current_date.getMonth() + 1); render_calendar(); }
+
+    /**
+     * Handles the selection of a date.
+     * @param {string} date_str - The selected date string (YYYY-MM-DD).
+     * @param {HTMLElement} el - The date element clicked.
+     */
+    function select_date(date_str, el) {
+        selected_date = date_str;
+        selected_time = null;
+        render_calendar(); // Re-render for active state
+        
+        // Fetch Slots
+        fetch_slots(date_str);
+    }
+
+    /**
+     * Fetches available time slots for the selected date and barber.
+     * @param {string} date - The date to fetch slots for.
+     */
+    function fetch_slots(date) {
+        const container = document.getElementById('time-slots');
+        container.innerHTML = '<span class="text-xs text-gray-500">Cargando...</span>';
+        
+        fetch(`/api/slots/?barber_id=${selected_barber}&date=${date}`)
+            .then(res => res.json())
+            .then(data => {
+                container.innerHTML = '';
+                if (data.slots && data.slots.length > 0) {
+                    data.slots.forEach(time => {
+                        const btn = document.createElement('button');
+                        btn.className = 'time-btn click-animate';
+                        btn.innerText = time;
+                        btn.onclick = () => select_time(time, btn);
+                        container.appendChild(btn);
+                    });
+                } else {
+                    container.innerHTML = '<span class="text-xs text-muted">No hay horarios disponibles</span>';
+                }
+            });
+    }
+
+    /**
+     * Handles the selection of a time slot.
+     * @param {string} time - The selected time string.
+     * @param {HTMLElement} el - The time button element clicked.
+     */
+    function select_time(time, el) {
+        selected_time = time;
+        document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
+        el.classList.add('active');
+        
+        // Show client info fields
+        document.getElementById('client-info-form').style.display = 'block';
+        document.getElementById('btn-confirm-booking').disabled = false;
+    }
+
+    /**
+     * Submits the booking form.
+     */
+    function submit_booking() {
+         const name = document.getElementById('client_name').value;
+         const phone = document.getElementById('client_phone').value;
+         
+         if(!name || !phone) { 
+             Swal.fire({
+                icon: 'warning',
+                title: 'Faltan datos',
+                text: 'Por favor completa tus datos personales.',
+                background: '#1a1a1a',
+                color: '#fff',
+                confirmButtonColor: '#c5a059'
+             });
+             return; 
+         }
+
+         // Specific validations
+         if(name.length < 3) {
+             Swal.fire({
+                icon: 'warning',
+                title: 'Nombre inválido',
+                text: 'El nombre debe tener al menos 3 caracteres.',
+                background: '#1a1a1a',
+                color: '#fff',
+                confirmButtonColor: '#c5a059'
+             });
+             return;
+         }
+
+         const phone_regex = /^\d{9}$/;
+         if(!phone_regex.test(phone)) {
+             Swal.fire({
+                icon: 'warning',
+                title: 'Teléfono inválido',
+                text: 'El teléfono debe tener exactamente 9 dígitos numéricos.',
+                background: '#1a1a1a',
+                color: '#fff',
+                confirmButtonColor: '#c5a059'
+             });
+             return;
+         }
+         if(!selected_barber || !selected_date || !selected_time || selected_services.length === 0) {
+             Swal.fire({
+                icon: 'warning',
+                title: 'Selección incompleta',
+                text: 'Por favor completa la selección de barbero, servicios, fecha y hora.',
+                background: '#1a1a1a',
+                color: '#fff',
+                confirmButtonColor: '#c5a059'
+             });
+             return;
+         }
+
+         const form_data = new FormData();
+         form_data.append('client_name', name);
+         form_data.append('client_phone', phone);
+         form_data.append('barber', selected_barber);
+         form_data.append('date', selected_date);
+         form_data.append('start_time', selected_time);
+         selected_services.forEach(s => form_data.append('services', s.id));
+         form_data.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+         fetch('/book/', {
+             method: 'POST',
+             body: form_data
+         })
+         .then(res => res.json())
+         .then(data => {
+             if(data.success) {
+                 Swal.fire({
+                    icon: 'success',
+                    title: '¡Cita guardada con éxito!',
+                    text: 'Te esperamos en 4 Pelos Club.',
+                    background: '#1a1a1a',
+                    color: '#fff',
+                    confirmButtonColor: '#c5a059',
+                    timer: 3000,
+                    showConfirmButton: false
+                 }).then(() => {
+                    location.reload();
+                 });
+             } else {
+                 Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: data.message || 'Hubo un problema al procesar tu solicitud.',
+                    background: '#1a1a1a',
+                    color: '#fff',
+                    confirmButtonColor: '#d33'
+                 });
+                 console.error(data);
+             }
+         });
+    }
+</script>
 {% endblock %}
