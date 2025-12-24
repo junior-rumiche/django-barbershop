@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User, Group
-from core.apps.backoffice.models import Category, Product, Order, OrderItem, SupplyEntry, BarberProfile, WorkSchedule
+from django.contrib.auth.models import User, Group
+from core.apps.backoffice.models import Category, Product, Order, OrderItem, SupplyEntry, BarberProfile, WorkSchedule, Appointment
 
 
 class SupplyEntrySerializer(serializers.ModelSerializer):
@@ -93,4 +94,13 @@ class BarberProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = BarberProfile
+        fields = "__all__"
+
+
+class AppointmentSerializer(serializers.ModelSerializer):
+    barber_name = serializers.CharField(source="barber.nickname", read_only=True)
+    services_names = serializers.StringRelatedField(many=True, source="services", read_only=True)
+
+    class Meta:
+        model = Appointment
         fields = "__all__"

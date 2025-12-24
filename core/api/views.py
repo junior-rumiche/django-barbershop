@@ -3,7 +3,8 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.contrib.auth.models import User, Group
 from django.core.exceptions import ValidationError
-from core.apps.backoffice.models import Category, Product, Order, SupplyEntry, BarberProfile
+from django.core.exceptions import ValidationError
+from core.apps.backoffice.models import Category, Product, Order, SupplyEntry, BarberProfile, Appointment
 from core.api.serializers import (
     UserSerializer,
     GroupSerializer,
@@ -12,6 +13,7 @@ from core.api.serializers import (
     OrderSerializer,
     SupplyEntrySerializer,
     BarberProfileSerializer,
+    AppointmentSerializer,
 )
 
 
@@ -116,3 +118,15 @@ class BarberProfileViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.DjangoModelPermissions]
     filter_backends = [filters.SearchFilter]
     search_fields = ["nickname", "user__username", "user__first_name"]
+
+
+class AppointmentViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows appointments to be viewed or edited.
+    """
+
+    queryset = Appointment.objects.all().order_by("-date", "-start_time")
+    serializer_class = AppointmentSerializer
+    permission_classes = [permissions.DjangoModelPermissions]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ["client_name", "client_phone", "barber__nickname"]

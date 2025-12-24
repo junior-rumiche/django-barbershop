@@ -90,7 +90,14 @@ def availability_api(request):
     start_dt = datetime.combine(query_date, schedule.start_hour)
     end_dt = datetime.combine(query_date, schedule.end_hour)
     
-    current_time = start_dt + timedelta(hours=2)
+    # 2-hour buffer logic
+    # Start buffer: Only applies if it's the CURRENT DAY
+    if query_date == timezone.now().date():
+        current_time = start_dt + timedelta(hours=2)
+    else:
+        current_time = start_dt
+
+    # End buffer: Always applies
     cutoff_time = end_dt - timedelta(hours=2)
 
     # Lunch times

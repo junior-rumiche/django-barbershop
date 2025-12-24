@@ -357,10 +357,14 @@ class Appointment(models.Model):
 
             if schedule:
                 # Calculate Valid Window
-                shift_start_dt = datetime.combine(self.date, schedule.start_hour)
-                shift_end_dt = datetime.combine(self.date, schedule.end_hour)
-                
-                valid_start_dt = shift_start_dt + timedelta(hours=2)
+                # Buffer Logic in Validation
+                # Start Buffer (2h): Only if appointment is TODAY
+                if self.date == timezone.now().date():
+                     valid_start_dt = shift_start_dt + timedelta(hours=2)
+                else:
+                     valid_start_dt = shift_start_dt
+
+                # End Buffer (2h): Always
                 valid_end_dt = shift_end_dt - timedelta(hours=2)
                 
                 appt_start_dt = datetime.combine(self.date, self.start_time)
