@@ -139,6 +139,12 @@
                                   {% endif %}
                               {% endif %}
 
+                              {% if appointment.status == 'CONFIRMED' %}
+                                    <button type="button" class="btn btn-sm btn-success" title="Convertir a Orden" 
+                                            onclick="convert_appointment('{% url 'backoffice:appointment_convert' appointment.pk %}', '{{ appointment.client_name|escapejs }}')">
+                                        <i class="bi bi-cart-plus"></i>
+                                    </button>
+                              {% endif %}
                               {% if perms.backoffice.change_appointment %}
                               <a href="{% url 'backoffice:appointment_edit' appointment.pk %}" class="btn btn-sm btn-primary"
                                  data-bs-toggle="tooltip" data-bs-placement="top" title="Editar">
@@ -214,48 +220,94 @@
    /**
     * Deletes an appointment asynchronously.
     */
-   async function delete_appointment(id, name) {
-      const result = await Swal.fire({
-         title: '¿Estás seguro?',
-         text: `Eliminarás la cita de "${name}". Esta acción no se puede deshacer.`,
-         icon: 'warning',
-         showCancelButton: true,
-         confirmButtonColor: '#dc3545',
-         cancelButtonColor: '#6c757d',
-         confirmButtonText: 'Sí, eliminar',
-         cancelButtonText: 'Cancelar'
-      });
+    async function delete_appointment(id, name) {
+       const result = await Swal.fire({
+          title: '¿Estás seguro?',
+          text: `Eliminarás la cita de "${name}". Esta acción no se puede deshacer.`,
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#dc3545',
+          cancelButtonColor: '#6c757d',
+          confirmButtonText: 'Sí, eliminar',
+          cancelButtonText: 'Cancelar'
+       });
 
-      if (result.isConfirmed) {
-         try {
-            const csrf_token = get_cookie('csrftoken');
-            // Ensure this endpoint exists or use a standard delete view
-            const response = await fetch(`/api/appointments/${id}/`, {
-               method: 'DELETE',
-               headers: {
-                  'X-CSRFToken': csrf_token,
-                  'Content-Type': 'application/json'
-               },
-            });
+       if (result.isConfirmed) {
+          try {
+             const csrf_token = get_cookie('csrftoken');
+             // Ensure this endpoint exists or use a standard delete view
+             const response = await fetch(`/api/appointments/${id}/`, {
+                method: 'DELETE',
+                headers: {
+                   'X-CSRFToken': csrf_token,
+                   'Content-Type': 'application/json'
+                },
+             });
 
-            if (response.ok) {
-               await Swal.fire(
-                  '¡Eliminado!',
-                  'La cita ha sido eliminada.',
-                  'success'
-               );
-               location.reload();
-               return;
+             if (response.ok) {
+                await Swal.fire(
+                   '¡Eliminado!',
+                   'La cita ha sido eliminada.',
+                   'success'
+                );
+                location.reload();
+                return;
+             }
+             throw new Error('Hubo un problema al eliminar la cita.');
+          } catch (error) {
+             await Swal.fire(
+                'Error',
+                error.message,
+                'error'
+             );
+          }
+       }
+    }
+
+    /**
+     * Converts an appointment to an order asynchronously with SweetAlert confirmation.
+     */
+    async function convert_appointment(url, name) {
+        const result = await Swal.fire({
+            title: '¿Convertir a Venta?',
+            text: `Se creará una orden de venta para "${name}" y la cita pasará a "Atendida".`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#198754', // Success green
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Sí, convertir',
+            cancelButtonText: 'Cancelar'
+        });
+
+        if (result.isConfirmed) {
+             const form = document.createElement('form');
+             form.method = 'POST';
+             form.action = url;
+             
+             const csrfInput = document.createElement('input');
+             csrfInput.type = 'hidden';
+             csrfInput.name = 'csrfmiddlewaretoken';
+             csrfInput.value = get_cookie('csrftoken'); 
+             
+             form.appendChild(csrfInput);
+             document.body.appendChild(form);
+             form.submit();
+        }
+    }
+
+    function get_cookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
             }
-            throw new Error('Hubo un problema al eliminar la cita.');
-         } catch (error) {
-            await Swal.fire(
-               'Error',
-               error.message,
-               'error'
-            );
-         }
-      }
-   }
+        }
+        return cookieValue;
+    }
 </script>
 {% endblock %}

@@ -1,10 +1,12 @@
 from rest_framework import viewsets, permissions, filters, status
+from django.db import transaction
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.contrib.auth.models import User, Group
 from django.core.exceptions import ValidationError
 from django.core.exceptions import ValidationError
-from core.apps.backoffice.models import Category, Product, Order, SupplyEntry, BarberProfile, Appointment
+from django.core.exceptions import ValidationError
+from core.apps.backoffice.models import Category, Product, Order, SupplyEntry, BarberProfile, Appointment, OrderItem
 from core.api.serializers import (
     UserSerializer,
     GroupSerializer,
@@ -129,4 +131,19 @@ class AppointmentViewSet(viewsets.ModelViewSet):
     serializer_class = AppointmentSerializer
     permission_classes = [permissions.DjangoModelPermissions]
     filter_backends = [filters.SearchFilter]
+    filter_backends = [filters.SearchFilter]
     search_fields = ["client_name", "client_phone", "barber__nickname"]
+
+    @action(detail=True, methods=["post"], url_path="convert-to-order")
+    def convert_to_order(self, request, pk=None):
+        appointment = self.get_object()
+
+        try:
+            order = appointment.create_order(request.user)
+            serializer = OrderSerializer(order)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        except ValidationError as e:
+             return Response({"detail": e.message}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

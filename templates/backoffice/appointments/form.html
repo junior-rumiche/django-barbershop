@@ -4,6 +4,7 @@
 {% block styles %}
 <link rel="stylesheet" href="{% static 'backoffice/extensions/flatpickr/flatpickr.min.css' %}">
 <link rel="stylesheet" href="{% static 'backoffice/extensions/choices.js/public/assets/styles/choices.css' %}">
+<link rel="stylesheet" href="{% static 'backoffice/extensions/sweetalert2/sweetalert2.min.css' %}">
 {% endblock %}
 
 {% block title %}{{ page_title }}{% endblock %}
@@ -149,8 +150,34 @@
                                             </button>
                                         </div>
                                     </div>
+                                    </div>
+                                    
+                                    <!-- Conversion Action -->
+                                    {% if object.status == 'CONFIRMED' %}
+                                    <div class="row mt-4">
+                                        <div class="col-12">
+                                            <div class="alert alert-light-success border-success">
+                                                <h4 class="alert-heading">Acciones Rápidas</h4>
+                                                <p>Esta cita está confirmada. Puedes generar una orden de venta automáticamente.</p>
+                                                <hr>
+                                                <button type="button" class="btn btn-success" onclick="confirm_convert()">
+                                                    <i class="bi bi-cart-plus me-2"></i>
+                                                    Convertir a Orden de Venta
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+
                                 </div>
                             </form>
+                            
+                            <!-- Hidden Form for Conversion -->
+                             {% if object.status == 'CONFIRMED' %}
+                             <form id="convert-form" action="{% url 'backoffice:appointment_convert' object.pk %}" method="post" style="display:none;">
+                                 {% csrf_token %}
+                             </form>
+                             {% endif %}
                         </div>
                     </div>
                 </div>
@@ -163,7 +190,26 @@
 {% block scripts %}
 <script src="{% static 'backoffice/extensions/flatpickr/flatpickr.min.js' %}"></script>
 <script src="{% static 'backoffice/extensions/choices.js/public/assets/scripts/choices.js' %}"></script>
+<script src="{% static 'backoffice/extensions/sweetalert2/sweetalert2.min.js' %}"></script> 
 <script>
+    {% if object.status == 'CONFIRMED' %}
+    function confirm_convert() {
+         Swal.fire({
+            title: '¿Convertir a Venta?',
+            text: "Se creará una orden de venta y la cita pasará a 'Atendida'.",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#198754', 
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Sí, convertir',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('convert-form').submit();
+            }
+        });
+    }
+    {% endif %}
     /**
      * Initialize date pickers for general date fields
      */

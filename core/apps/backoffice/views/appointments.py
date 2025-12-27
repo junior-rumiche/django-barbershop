@@ -2,6 +2,9 @@ import json
 from django.urls import reverse_lazy, reverse
 from django.db.models import Sum, Q, F
 from django.utils import timezone
+from django.shortcuts import get_object_or_404, redirect
+from django.contrib import messages
+from django.core.exceptions import ValidationError
 from django.http import JsonResponse
 from django.views.generic import (
     CreateView, UpdateView, ListView, DeleteView, DetailView, TemplateView, View
@@ -123,3 +126,22 @@ class AppointmentUpdateView(BasePageMixin, UpdateView):
         }
         context['services_json'] = json.dumps(services_data)
         return context
+
+
+class AppointmentConvertToOrderView(LoginRequiredMixin, PermissionRequiredMixin, View):
+    permission_required = "backoffice.add_order"
+
+    def post(self, request, pk):
+        appointment = get_object_or_404(Appointment, pk=pk)
+        
+        try:
+            order = appointment.create_order(request.user)
+            messages.success(request, f"Cita convertida a Orden #{order.id} correctamente.")
+            return redirect('backoffice:order_edit', pk=order.id)
+            
+        except ValidationError as e:
+            messages.error(request, e.message)
+        except Exception as e:
+            messages.error(request, f"Error al convertir: {str(e)}")
+        
+        return redirect('backoffice:appointment_edit', pk=pk)

@@ -3,12 +3,12 @@ Models for the backoffice application.
 This module defines the data structures used in the backoffice.
 """
 
-from django.db import models, transaction
+from datetime import time, timedelta, date, datetime
+from django.db import models, transaction, IntegrityError
+from django.contrib.auth.models import User, Group
 from django.core.exceptions import ValidationError
-from django.contrib.auth.models import User
-from django.utils import timezone
 from decimal import Decimal
-from datetime import datetime, timedelta, date
+from django.utils import timezone
 
 
 class Category(models.Model):
@@ -342,6 +342,8 @@ class Appointment(models.Model):
     def clean(self):
         if self.status == 'CANCELED': return
         if not self.start_time or not self.end_time: return
+        
+        # Check overlaps
         overlapping = Appointment.objects.filter(
             barber=self.barber, date=self.date
         ).exclude(status='CANCELED').exclude(pk=self.pk).exclude(start_time__isnull=True).exclude(end_time__isnull=True)
@@ -350,34 +352,82 @@ class Appointment(models.Model):
             if self.start_time < appt.end_time and self.end_time > appt.start_time:
                 raise ValidationError("El horario seleccionado ya no está disponible. Por favor elige otro.")
 
-        # Check Work Schedule and Buffers (2h after start, 2h before end)
+        # Check Work Schedule and Buffers
         if self.date and self.barber:
             day_idx = self.date.weekday()
             schedule = WorkSchedule.objects.filter(barber=self.barber, day_of_week=day_idx).first()
 
             if schedule:
-                # Calculate Valid Window
-                # Buffer Logic in Validation
-                # Start Buffer (2h): Only if appointment is TODAY
-                if self.date == timezone.now().date():
-                     valid_start_dt = shift_start_dt + timedelta(hours=2)
-                else:
-                     valid_start_dt = shift_start_dt
+                # 1. Base Schedule Times
+                base_start_dt = datetime.combine(self.date, schedule.start_hour)
+                base_end_dt = datetime.combine(self.date, schedule.end_hour)
 
-                # End Buffer (2h): Always
-                valid_end_dt = shift_end_dt - timedelta(hours=2)
+                # 2. Calculate Buffered Windows
+                # Start Buffer: +2h only if TODAY
+                if self.date == timezone.now().date():
+                     valid_start_dt = base_start_dt + timedelta(hours=2)
+                else:
+                     valid_start_dt = base_start_dt
+
+                # End Buffer: -2h ALWAYS
+                valid_end_dt = base_end_dt - timedelta(hours=2)
                 
+                # 3. Appointment Times to Datetime
                 appt_start_dt = datetime.combine(self.date, self.start_time)
-                # For end_time which might be midnight if just duration... but here it is a TimeField
                 appt_end_dt = datetime.combine(self.date, self.end_time)
 
                 if appt_start_dt < valid_start_dt:
-                    raise ValidationError(f"Las citas inician 2 horas después de la entrada. Inicio válido desde: {valid_start_dt.strftime('%I:%M %p')}")
+                    formatted_start = valid_start_dt.strftime('%I:%M %p')
+                    raise ValidationError(f"Las citas inician 2 horas después de la entrada. Inicio válido desde: {formatted_start}")
                 
                 if appt_end_dt > valid_end_dt:
-                    raise ValidationError(f"Las citas deben terminar 2 horas antes de la salida. Fin límite: {valid_end_dt.strftime('%I:%M %p')}")
+                    formatted_end = valid_end_dt.strftime('%I:%M %p')
+                    raise ValidationError(f"Las citas deben terminar 2 horas antes de la salida. Fin límite: {formatted_end}")
             else:
                 raise ValidationError("El barbero no tiene horario asignado para este día.")
+
+    def create_order(self, user):
+        """
+        Creates an Order from this Appointment.
+        Expected user is the one triggering the action (backoffice staff).
+        The Order 'created_by' will be the barber if mapped, or the trigger user.
+        """
+        if self.status != 'CONFIRMED':
+             raise ValidationError("Solo citas CONFIRMADAS pueden convertirse en orden.")
+        
+        if not self.services.exists():
+             raise ValidationError("La cita no tiene servicios asignados.")
+
+        with transaction.atomic():
+            # Determine creator (Barber's user > Trigger User)
+            barber_user = self.barber.user if self.barber and self.barber.user else user
+            
+            order = Order.objects.create(
+                created_by=barber_user, 
+                client_name=self.client_name, # Map Client Name
+                status='PENDING',
+                total_amount=0 
+            )
+
+            total = 0
+            for service in self.services.all():
+                item = OrderItem.objects.create(
+                    order=order,
+                    product=service,
+                    quantity=1,
+                    unit_price=service.price,
+                    subtotal=service.price
+                )
+                total += item.subtotal
+
+            order.total_amount = total
+            order.save()
+            
+            # Update Appointment Status
+            self.status = 'COMPLETED'
+            self.save()
+            
+            return order
 
         # Check Active Orders (Walk-ins)
         # We assume the barber user is the one who created the order

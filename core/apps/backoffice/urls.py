@@ -36,7 +36,6 @@ from core.apps.backoffice.views.barbers import (
     BarberListView,
     BarberCreateView,
     BarberUpdateView,
-    BarberUpdateView,
 )
 from core.apps.backoffice.views.appointments import (
     AppointmentListView,
@@ -44,6 +43,7 @@ from core.apps.backoffice.views.appointments import (
     AppointmentUpdateView,
     AppointmentCalendarView,
     AppointmentJSONView,
+    AppointmentConvertToOrderView,
 )
 from core.apps.backoffice.views.profile import ProfileUpdateView
 
@@ -103,4 +103,5 @@ urlpatterns = [
     path("api/appointments/events/", AppointmentJSONView.as_view(), name="appointment_events"),
     path("appointments/add/", AppointmentCreateView.as_view(), name="appointment_add"),
     path("appointments/<int:pk>/edit/", AppointmentUpdateView.as_view(), name="appointment_edit"),
+    path("appointments/<int:pk>/convert/", AppointmentConvertToOrderView.as_view(), name="appointment_convert"),
 ]
