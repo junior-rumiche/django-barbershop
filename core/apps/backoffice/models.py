@@ -363,26 +363,36 @@ class Appointment(models.Model):
                 base_end_dt = datetime.combine(self.date, schedule.end_hour)
 
                 # 2. Calculate Buffered Windows
-                # Start Buffer: +2h only if TODAY
+                # Start Buffer: Lead Time logic (1 hour from NOW if today)
                 if self.date == timezone.now().date():
-                     valid_start_dt = base_start_dt + timedelta(hours=2)
+                     # Minimum time is MAX(Shift Start, Now + 1h)
+                     min_lead_time = datetime.now() + timedelta(hours=1)
+                     # Using naive comparison assuming local time consistency or make aware
+                     if min_lead_time > base_start_dt:
+                        valid_start_dt = min_lead_time
+                     else:
+                        valid_start_dt = base_start_dt
                 else:
                      valid_start_dt = base_start_dt
 
-                # End Buffer: -2h ALWAYS
-                valid_end_dt = base_end_dt - timedelta(hours=2)
+                # End Buffer: Allow full shift usage
+                valid_end_dt = base_end_dt
                 
                 # 3. Appointment Times to Datetime
                 appt_start_dt = datetime.combine(self.date, self.start_time)
                 appt_end_dt = datetime.combine(self.date, self.end_time)
 
                 if appt_start_dt < valid_start_dt:
-                    formatted_start = valid_start_dt.strftime('%I:%M %p')
-                    raise ValidationError(f"Las citas inician 2 horas después de la entrada. Inicio válido desde: {formatted_start}")
+                    # Provide clear message depending on if it's shift start or lead time issue
+                    if self.date == timezone.now().date() and datetime.now() + timedelta(hours=1) > base_start_dt:
+                         raise ValidationError("Las citas deben reservarse con al menos 1 hora de anticipación.")
+                    else:
+                         formatted_start = valid_start_dt.strftime('%I:%M %p')
+                         raise ValidationError(f"La cita debe estar dentro del horario laboral. Inicio válido desde: {formatted_start}")
                 
                 if appt_end_dt > valid_end_dt:
                     formatted_end = valid_end_dt.strftime('%I:%M %p')
-                    raise ValidationError(f"Las citas deben terminar 2 horas antes de la salida. Fin límite: {formatted_end}")
+                    raise ValidationError(f"La cita debe terminar dentro del horario laboral. Fin límite: {formatted_end}")
             else:
                 raise ValidationError("El barbero no tiene horario asignado para este día.")
 

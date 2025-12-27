@@ -54,8 +54,9 @@ def availability_api(request):
 
     try:
         query_date = datetime.strptime(date_str, "%Y-%m-%d").date()
-        # Verify date is not in the past
-        if query_date < timezone.now().date():
+        # Verify date is not in the past (Use LOCAL time, not UTC)
+        local_today = timezone.localtime(timezone.now()).date()
+        if query_date < local_today:
              return JsonResponse({"slots": []}) # No slots in past
             
     except ValueError:
@@ -86,19 +87,15 @@ def availability_api(request):
     
     slots = []
     
-    # Calculate Buffers (2 hours after start, 2 hours before end)
+    # Calculate Buffers
+    # 1. Start Time: Official shift start
     start_dt = datetime.combine(query_date, schedule.start_hour)
-    end_dt = datetime.combine(query_date, schedule.end_hour)
     
-    # 2-hour buffer logic
-    # Start buffer: Only applies if it's the CURRENT DAY
-    if query_date == timezone.now().date():
-        current_time = start_dt + timedelta(hours=2)
-    else:
-        current_time = start_dt
-
-    # End buffer: Always applies
-    cutoff_time = end_dt - timedelta(hours=2)
+    # 2. End Time: Official shift end (Allow bookings until the very end of the shift)
+    end_dt = datetime.combine(query_date, schedule.end_hour)
+    cutoff_time = end_dt
+    
+    current_time = start_dt
 
     # Lunch times
     lunch_start = None
@@ -168,10 +165,14 @@ def availability_api(request):
                         break
         
         if is_available:
-             # Check if it's today and time has passed
-             if query_date == timezone.now().date() and slot_start < datetime.now():
-                 pass
-             else:
+             # Check if it's today and enforce Lead Time (1 hour buffer for confirmation)
+             if query_date == local_today:
+                 # Must be at least 1 hour in the future
+                 min_booking_time = datetime.now() + timedelta(minutes=60)
+                 if slot_start < min_booking_time:
+                     is_available = False
+            
+             if is_available:
                  slots.append(slot_start.strftime("%I:%M %p"))
 
         current_time += timedelta(minutes=30)
