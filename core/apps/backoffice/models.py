@@ -5,6 +5,7 @@ This module defines the data structures used in the backoffice.
 
 from datetime import time, timedelta, date, datetime
 from django.db import models, transaction, IntegrityError
+from django.db.models import Sum
 from django.contrib.auth.models import User, Group
 from django.core.exceptions import ValidationError
 from decimal import Decimal
@@ -122,6 +123,14 @@ class Order(models.Model):
     def __str__(self):
         return f"Cliente: {self.client_name} - ${self.total_amount}"
 
+    def update_totals(self):
+        """
+        Recalcula el total de la orden sumando los subtotales de los items.
+        """
+        total = self.items.aggregate(total=Sum('subtotal'))['total'] or 0
+        self.total_amount = total
+        self.save(update_fields=['total_amount'])
+
     @transaction.atomic
     def mark_as_paid(self, user_who_collected):
         """
@@ -172,6 +181,12 @@ class OrderItem(models.Model):
     def save(self, *args, **kwargs):
         self.subtotal = self.unit_price * self.quantity
         super().save(*args, **kwargs)
+        self.order.update_totals()
+
+    def delete(self, *args, **kwargs):
+        order = self.order
+        super().delete(*args, **kwargs)
+        order.update_totals()
 
 
 class SupplyEntry(models.Model):
