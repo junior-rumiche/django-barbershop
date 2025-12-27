@@ -503,26 +503,35 @@
              if(data.success) {
                  Swal.fire({
                     icon: 'success',
-                    title: '¡Cita guardada con éxito!',
-                    text: 'Te esperamos en 4 Pelos Club.',
-                    background: '#1a1a1a',
-                    color: '#fff',
-                    confirmButtonColor: '#c5a059',
-                    timer: 3000,
-                    showConfirmButton: false
+                    title: '¡Reserva Confirmada!',
+                    text: 'Tu cita ha sido agendada correctamente.',
+                    background: '#1e1e1e',
+                    color: '#ffffff',
+                    iconColor: '#c5a059',
+                    showConfirmButton: false,
+                    timer: 2500,
+                    backdrop: 'rgba(0,0,0,0.8)'
                  }).then(() => {
                     location.reload();
                  });
              } else {
+                 let primary_error = data.message;
+                 
+                 // Usamos snake_case para las variables
+                 if (data.errors && data.errors.length > 0) {
+                     primary_error = data.errors[0];
+                 }
+
                  Swal.fire({
                     icon: 'error',
-                    title: 'Error',
-                    text: data.message || 'Hubo un problema al procesar tu solicitud.',
-                    background: '#1a1a1a',
-                    color: '#fff',
-                    confirmButtonColor: '#d33'
+                    title: 'No se pudo reservar',
+                    text: primary_error,
+                    background: '#1e1e1e',
+                    color: '#ffffff',
+                    confirmButtonText: 'Entendido',
+                    confirmButtonColor: '#c5a059',
+                    backdrop: 'rgba(0,0,0,0.8)'
                  });
-                 console.error(data);
              }
          });
     }

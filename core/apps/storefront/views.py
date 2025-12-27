@@ -2,6 +2,7 @@ from django.views.generic import TemplateView, View
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+from django.core.exceptions import ValidationError
 from datetime import datetime, timedelta, time
 import json
 
@@ -32,11 +33,27 @@ class BookingView(View):
                     "message": "Cita solicitada con éxito.",
                     "id": appointment.id
                 })
+            except ValidationError as e:
+                # e.messages is a list of clean strings from the ValidationError
+                return JsonResponse({
+                    "success": False, 
+                    "message": "Error de validación:", 
+                    "errors": e.messages
+                }, status=400)
             except Exception as e:
                 return JsonResponse({"success": False, "message": str(e)}, status=400)
         else:
-            errors = form.errors.as_json()
-            return JsonResponse({"success": False, "message": "Datos inválidos", "errors": errors}, status=400)
+            # Extract plain text error messages for a cleaner display
+            error_list = []
+            for field, errors in form.errors.items():
+                for error in errors:
+                    error_list.append(f"{error}")
+            
+            return JsonResponse({
+                "success": False, 
+                "message": "Por favor corrige los siguientes errores:", 
+                "errors": error_list
+            }, status=400)
 
 
 def availability_api(request):

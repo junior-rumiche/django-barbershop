@@ -362,9 +362,22 @@ class Appointment(models.Model):
         overlapping = Appointment.objects.filter(
             barber=self.barber, date=self.date
         ).exclude(status='CANCELED').exclude(pk=self.pk).exclude(start_time__isnull=True).exclude(end_time__isnull=True)
+        
+        # Prepare self datetimes for comparison
+        self_start_dt = datetime.combine(self.date, self.start_time)
+        self_end_dt = datetime.combine(self.date, self.end_time)
+        if self.end_time < self.start_time:
+             self_end_dt += timedelta(days=1)
 
         for appt in overlapping:
-            if self.start_time < appt.end_time and self.end_time > appt.start_time:
+            # Prepare overlapping appt datetimes
+            appt_start_dt = datetime.combine(appt.date, appt.start_time)
+            appt_end_dt = datetime.combine(appt.date, appt.end_time)
+            if appt.end_time < appt.start_time:
+                appt_end_dt += timedelta(days=1)
+
+            # Strict overlap check using datetimes
+            if self_start_dt < appt_end_dt and self_end_dt > appt_start_dt:
                 raise ValidationError("El horario seleccionado ya no está disponible. Por favor elige otro.")
 
         # Check Work Schedule and Buffers
@@ -376,6 +389,9 @@ class Appointment(models.Model):
                 # 1. Base Schedule Times
                 base_start_dt = datetime.combine(self.date, schedule.start_hour)
                 base_end_dt = datetime.combine(self.date, schedule.end_hour)
+                # Handle overnight shift (e.g. 22:00 to 02:00)
+                if schedule.end_hour < schedule.start_hour:
+                    base_end_dt += timedelta(days=1)
 
                 # 2. Calculate Buffered Windows
                 # Start Buffer: Lead Time logic (1 hour from NOW if today)
@@ -400,6 +416,9 @@ class Appointment(models.Model):
                 # 3. Appointment Times to Datetime
                 appt_start_dt = datetime.combine(self.date, self.start_time)
                 appt_end_dt = datetime.combine(self.date, self.end_time)
+                # Handle appointment crossing midnight
+                if self.end_time < self.start_time:
+                    appt_end_dt += timedelta(days=1)
 
                 if appt_start_dt < valid_start_dt:
                     # Provide clear message depending on if it's shift start or lead time issue
