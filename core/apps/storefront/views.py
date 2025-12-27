@@ -167,8 +167,11 @@ def availability_api(request):
         if is_available:
              # Check if it's today and enforce Lead Time (1 hour buffer for confirmation)
              if query_date == local_today:
-                 # Must be at least 1 hour in the future
-                 min_booking_time = datetime.now() + timedelta(minutes=60)
+                 # Must be at least 1 hour in the future (Use LOCAL time)
+                 current_local_time = timezone.localtime(timezone.now())
+                 # Convert to naive to compare with slot_start (which is naive)
+                 min_booking_time = current_local_time.replace(tzinfo=None) + timedelta(minutes=60)
+                 
                  if slot_start < min_booking_time:
                      is_available = False
             

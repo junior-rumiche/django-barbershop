@@ -379,10 +379,14 @@ class Appointment(models.Model):
 
                 # 2. Calculate Buffered Windows
                 # Start Buffer: Lead Time logic (1 hour from NOW if today)
-                if self.date == timezone.now().date():
+                # Use Local Time (Peru) for "Today" check
+                now_local = timezone.localtime(timezone.now())
+                
+                if self.date == now_local.date():
                      # Minimum time is MAX(Shift Start, Now + 1h)
-                     min_lead_time = datetime.now() + timedelta(hours=1)
-                     # Using naive comparison assuming local time consistency or make aware
+                     # Convert now_local to naive to compare with base_start_dt (which is naive from datetime.combine)
+                     min_lead_time = now_local.replace(tzinfo=None) + timedelta(hours=1)
+                     
                      if min_lead_time > base_start_dt:
                         valid_start_dt = min_lead_time
                      else:
@@ -399,7 +403,11 @@ class Appointment(models.Model):
 
                 if appt_start_dt < valid_start_dt:
                     # Provide clear message depending on if it's shift start or lead time issue
-                    if self.date == timezone.now().date() and datetime.now() + timedelta(hours=1) > base_start_dt:
+                    # Re-calculate checks using local time variables
+                    check_now_local = timezone.localtime(timezone.now())
+                    min_lead_limit = check_now_local.replace(tzinfo=None) + timedelta(hours=1)
+                    
+                    if self.date == check_now_local.date() and min_lead_limit > base_start_dt:
                          raise ValidationError("Las citas deben reservarse con al menos 1 hora de anticipación.")
                     else:
                          formatted_start = valid_start_dt.strftime('%I:%M %p')
