@@ -22,4 +22,5 @@ ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "").split(",")
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = "static/"
-STATIC_ROOT = BASE_DIR / "staticfiles"
+STATIC_ROOT = BASE_DIR / "staticfiles_build"
+
