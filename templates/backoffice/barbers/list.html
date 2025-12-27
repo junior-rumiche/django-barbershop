@@ -199,8 +199,16 @@
                     let schedules_html = '';
                     if (barber.schedules && barber.schedules.length > 0) {
                         barber.schedules.forEach(schedule => {
-                            // Helper to format time strings (HH:MM:SS -> HH:MM)
-                            const formatTime = (timeStr) => timeStr ? timeStr.slice(0, 5) : '';
+                            // Helper to format time strings (HH:MM:SS -> HH:MM AM/PM)
+                            const formatTime = (timeStr) => {
+                                if (!timeStr) return '';
+                                const [hourStr, minuteStr] = timeStr.split(':');
+                                let hour = parseInt(hourStr);
+                                const ampm = hour >= 12 ? 'PM' : 'AM';
+                                hour = hour % 12;
+                                hour = hour ? hour : 12; // the hour '0' should be '12'
+                                return `${hour.toString().padStart(2, '0')}:${minuteStr} ${ampm}`;
+                            };
 
                             const lunch = (schedule.lunch_start && schedule.lunch_end) 
                                 ? `${formatTime(schedule.lunch_start)} - ${formatTime(schedule.lunch_end)}` 
