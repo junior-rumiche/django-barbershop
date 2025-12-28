@@ -22,9 +22,9 @@ function toggleMenu() {
     const isOpen = !mobileMenu.classList.contains('hidden');
 
     if (isOpen) {
-        menuIcon.className = 'fas fa-times'; // Icono "X" de FontAwesome
+        menuIcon.className = 'bi bi-x-lg'; // Icono "X" de Bootstrap Icons
     } else {
-        menuIcon.className = 'fas fa-bars'; // Icono "Hamburguesa" de FontAwesome
+        menuIcon.className = 'bi bi-list'; // Icono "Hamburguesa" de Bootstrap Icons
     }
 }
 
